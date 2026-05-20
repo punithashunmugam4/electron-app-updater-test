@@ -1,14 +1,8 @@
-// const axios = require("axios");
-// const path = require("path");
-// const fs = require("fs");
-// const exec = require("child_process").exec;
-// const { app } = require("electron");
-
-import axios from "axios";
-import path from "path";
-import fs from "fs";
-import { exec } from "child_process";
-import { app } from "electron";
+const axios = require("axios");
+const path = require("path");
+const fs = require("fs");
+const exec = require("child_process").exec;
+const { app } = require("electron");
 
 async function checkForFileUpdates() {
   const currentVersion = "1.0.0"; // Your current local app version
@@ -61,7 +55,13 @@ async function checkForFileUpdates() {
       }
     }
   } catch (error) {
-    console.error("GitHub update sync failed:", error);
+    if (error.response && error.response.status === 404) {
+      console.log(
+        "Update manifest or update file not found on GitHub; skipping update check.",
+      );
+    } else {
+      console.error("GitHub update sync failed:", error);
+    }
   }
 }
 

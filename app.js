@@ -97,24 +97,27 @@ app.whenReady().then(() => {
     console.error("Failed to require start script:", err);
   }
 
-  // Trigger your custom file-check logic
-  try {
-    const updaterPath = path.join(app.getAppPath(), "updater.js");
-    if (fs.existsSync(updaterPath)) {
-      const updater = requireC(updaterPath);
-      if (updater && typeof updater.checkForFileUpdates === "function") {
-        // call and catch any rejection
-        updater
-          .checkForFileUpdates()
-          .catch((err) => console.error("Updater error:", err));
+  // Trigger your custom file-check logic only in packaged app mode
+  if (app.isPackaged) {
+    try {
+      const updaterPath = path.join(app.getAppPath(), "updater.cjs");
+      if (fs.existsSync(updaterPath)) {
+        const updater = requireC(updaterPath);
+        if (updater && typeof updater.checkForFileUpdates === "function") {
+          updater
+            .checkForFileUpdates()
+            .catch((err) => console.error("Updater error:", err));
+        } else {
+          console.log("No checkForFileUpdates export; skipping updater");
+        }
       } else {
-        console.log("No checkForFileUpdates export; skipping updater");
+        console.log("No updater.cjs found; skipping updates");
       }
-    } else {
-      console.log("No updater.js found; skipping updates");
+    } catch (err) {
+      console.error("Failed to run updater:", err);
     }
-  } catch (err) {
-    console.error("Failed to run updater:", err);
+  } else {
+    console.log("Development mode detected; skipping update check.");
   }
 
   ipcMain.handle("ping", () => "pong");

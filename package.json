@@ -50,6 +50,13 @@
     ],
     "files": [
       "**/*"
+    ],
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "punithashunmugam4",
+        "repo": "electron-app-updater-test"
+      }
     ]
   }
 }
