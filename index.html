@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>My Electron App</title>
+    <style>
+      .tabs {
+        display: flex;
+        margin-bottom: 5px;
+      }
+      .tab,
+      #add-tab,
+      #interact-webview {
+        padding: 5px;
+        border: 1px solid #ccc;
+        margin-right: 5px;
+        cursor: pointer;
+      }
+      .tab.active {
+        background-color: #ddd;
+      }
+      .close-tab {
+        border: none;
+        /* border-radius: 50%; */
+        color: #aaa;
+        width: 20px;
+        height: 20px;
+        cursor: pointer;
+        font-weight: bold;
+        font-size: large;
+        padding: 0;
+      }
+
+      .close-tab:hover,
+      .close-tab:focus {
+        color: black;
+        text-decoration: none;
+        cursor: pointer;
+      }
+      webview.tab-content-frame {
+        width: 100%;
+        height: calc(100vh - 100px);
+        border: none;
+      }
+      webview.hidden {
+        display: none;
+      }
+      #url-bar {
+        width: 88%;
+        padding: 10px;
+        margin-bottom: 20px;
+        background-size: 0% 100%;
+        background-repeat: no-repeat;
+        border-radius: 20px;
+        border-color: #ccc;
+        background-color: #eee;
+        background-image: linear-gradient(to right, #ddd, #ddd);
+      }
+      .btn {
+        padding: 5px 5px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+      }
+      .btn:hover {
+        background-color: #0056b3;
+      }
+      /* Add some basic styling for the modal */
+      .modal {
+        display: none;
+        position: fixed;
+        z-index: 1;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgb(0, 0, 0);
+        background-color: rgba(0, 0, 0, 0.4);
+      }
+
+      .modal-content {
+        background-color: #fefefe;
+        margin: 15% auto;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 80%;
+      }
+
+      .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+      }
+
+      .close:hover,
+      .close:focus {
+        color: black;
+        text-decoration: none;
+        cursor: pointer;
+      }
+    </style>
+    <script>
+      window.onload = function () {
+        var url = "https://moviesmod.build/";
+        document.getElementById("url-bar").value = url;
+        document.querySelector(".tab-content-frame").src = url;
+        document.querySelector(".tab.active").setAttribute("data-url", url);
+      };
+    </script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+    />
+  </head>
+  <body>
+    <div class="tabs">
+      <div
+        class="tab active"
+        id="1"
+        data-tab-id="1"
+        data-url="https://moviesmod.build/"
+      >
+        Home <button class="close-tab">&times;</button>
+      </div>
+      <div id="add-tab">&#43;</div>
+    </div>
+    <form id="url-form">
+      <input type="text" id="url-bar" placeholder="Enter URL here" />
+      <span id="interact-webview" class="btn">Auto</span>
+      <span class="btn" id="show-downloads"
+        ><i class="fas fa-download"></i
+      ></span>
+      <span id="reload-webview" class="btn"
+        ><i class="fas fa-sync-alt"></i
+      ></span>
+    </form>
+    <webview
+      preload="preload.cjs"
+      tabindex="1"
+      class="tab-content-frame active"
+      id="frame-1"
+      src="https://moviesmod.build/"
+    ></webview>
+    <script src="index.js"></script>
+
+    <!-- Modal for download progress -->
+    <div id="download-modal" class="modal">
+      <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>Download Progress</h2>
+        <ul id="download-list"></ul>
+      </div>
+    </div>
+    <script src="downloads.cjs"></script>
+  </body>
+</html>
