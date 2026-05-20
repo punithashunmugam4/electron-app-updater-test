@@ -5,7 +5,7 @@ const exec = require("child_process").exec;
 const { app } = require("electron");
 
 async function checkForFileUpdates() {
-  const currentVersion = "1.0.0"; // Your current local app version
+  const currentVersion = "1.1.0"; // Your current local app version
 
   // Replace with your actual GitHub Username and Repository Name
   const GITHUB_USER = "punithashunmugam4";

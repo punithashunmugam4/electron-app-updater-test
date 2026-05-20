@@ -22,6 +22,7 @@ const dirname = app.getAppPath();
 var preload_path = path.join(dirname, "preload.cjs");
 let mainWindow;
 app.commandLine.appendSwitch("log-level", "3"); // supression of dev tools warning in terminal
+app.singleInstanceLock();
 ipcMain.handle("get-webview-actions", async () => {
   try {
     const { readFile } = await import("fs/promises");
