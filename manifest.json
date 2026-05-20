@@ -1,0 +1,7 @@
+{
+  "version": "1.1.0",
+  "changedFiles": ["src/index.js", "src/utils.js"],
+  "newDependencies": {
+    "axios": "^1.4.0"
+  }
+}

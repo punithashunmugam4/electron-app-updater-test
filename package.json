@@ -15,6 +15,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "axios": "^1.16.1",
     "better-sqlite3": "12.5.0",
     "bunyan": "^1.8.15",
     "bunyan-rotating-file-stream": "2.0.6",
@@ -40,5 +41,15 @@
   "devDependencies": {
     "electron": "^39.2.7",
     "electron-builder": "latest"
+  },
+  "build": {
+    "appId": "update-tester",
+    "asar": true,
+    "asarUnpack": [
+      "updater.js"
+    ],
+    "files": [
+      "**/*"
+    ]
   }
 }

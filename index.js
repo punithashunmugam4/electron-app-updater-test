@@ -26,7 +26,7 @@ window.electron
   .catch((err) => {
     console.error(
       "Error loading webviewActions.cjs via getWebviewActions:",
-      err
+      err,
     );
   });
 
@@ -84,7 +84,7 @@ const closeTab = (event) => {
         console.log("looping: ", remainingTabs[i].getAttribute("data-tab-id"));
         if (parseInt(remainingTabs[i].getAttribute("data-tab-id")) < tabId) {
           newActiveTabId = parseInt(
-            remainingTabs[i].getAttribute("data-tab-id")
+            remainingTabs[i].getAttribute("data-tab-id"),
           );
           console.log("New active Tab id: ", newActiveTabId);
           break;
@@ -92,12 +92,12 @@ const closeTab = (event) => {
       }
 
       const newActiveTab = document.querySelector(
-        `.tab[data-tab-id="${newActiveTabId}"]`
+        `.tab[data-tab-id="${newActiveTabId}"]`,
       );
       newActiveTab?.classList?.add("active");
 
       const newActiveWebview = document.getElementById(
-        `frame-${newActiveTabId}`
+        `frame-${newActiveTabId}`,
       );
       newActiveWebview?.classList?.remove("hidden");
       newActiveWebview?.classList?.add("active");
@@ -110,8 +110,8 @@ const closeTab = (event) => {
   }
 };
 
-const addTab = (url = "https://moviesmod.build/", script = "") => {
-  url = url === "" ? "https://moviesmod.build/" : url;
+const addTab = (url = "https://moviesmod.farm/", script = "") => {
+  url = url === "" ? "https://moviesmod.farm/" : url;
 
   document.querySelectorAll(".tab").forEach((tab) => {
     tab.classList.remove("active");
@@ -209,9 +209,8 @@ const addTab = (url = "https://moviesmod.build/", script = "") => {
 
   newWebview.addEventListener("did-fail-load", (event) => {
     console.log("Failed to load:", event.errorDescription);
-    document.getElementById(
-      "url-bar"
-    ).value = `Error: ${event.errorDescription}`;
+    document.getElementById("url-bar").value =
+      `Error: ${event.errorDescription}`;
   });
   newWebview.addEventListener("context-menu", context_listener);
   return newWebview;
@@ -219,7 +218,7 @@ const addTab = (url = "https://moviesmod.build/", script = "") => {
 
 const waitForWebviewLoad = (
   webview = document.querySelector(".tab-content-frame.active"),
-  callback
+  callback,
 ) => {
   webview.addEventListener("did-finish-load", () => {
     callback();
@@ -305,7 +304,7 @@ window.addEventListener("DOMContentLoaded", () => {
   document.getElementById("interact-webview").addEventListener("click", () => {
     url = document.getElementById("url-bar").value;
     console.log("Interact with webview clicked", url);
-    if (url.includes("https://moviesmod.how/download")) {
+    if (url.includes("https://moviesmod.farm/download")) {
       let webview = document.querySelector(".tab-content-frame.active");
       interactwithwebview(webview, electron.moviesmod_script);
     }

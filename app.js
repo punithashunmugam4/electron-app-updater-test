@@ -10,6 +10,10 @@ import path from "path";
 import { fileURLToPath } from "url";
 import contextMenu from "electron-context-menu";
 import electron from "electron";
+import fs from "fs";
+import { createRequire } from "module";
+const requireC = createRequire(import.meta.url);
+
 const fetch = (...args) =>
   import("node-fetch").then(({ default: fetch }) => fetch(...args));
 import http from "http";
@@ -30,6 +34,17 @@ ipcMain.handle("get-webview-actions", async () => {
     return "";
   }
 });
+
+function getExecutablePath() {
+  const userDataPath = app.getPath("userData");
+  const customIndex = path.join(userDataPath, "app_files", "index.js");
+
+  // If hot-updated files exist in userData, run them. Otherwise, run bundled files.
+  if (fs.existsSync(customIndex)) {
+    return customIndex;
+  }
+  return path.join(app.getAppPath(), "index.js"); // Fallback to root index.js
+}
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -68,8 +83,44 @@ function createWindow() {
 }
 
 app.whenReady().then(() => {
+  const startScript = getExecutablePath();
+
+  // Dynamic require of your app entry point (use createRequire in ESM)
+  try {
+    // Avoid requiring the renderer `index.js` from the main process
+    if (path.basename(startScript) !== "index.js") {
+      requireC(startScript);
+    } else {
+      console.log("Skipping require of renderer index.js from main process");
+    }
+  } catch (err) {
+    console.error("Failed to require start script:", err);
+  }
+
+  // Trigger your custom file-check logic
+  try {
+    const updaterPath = path.join(app.getAppPath(), "updater.js");
+    if (fs.existsSync(updaterPath)) {
+      const updater = requireC(updaterPath);
+      if (updater && typeof updater.checkForFileUpdates === "function") {
+        // call and catch any rejection
+        updater
+          .checkForFileUpdates()
+          .catch((err) => console.error("Updater error:", err));
+      } else {
+        console.log("No checkForFileUpdates export; skipping updater");
+      }
+    } else {
+      console.log("No updater.js found; skipping updates");
+    }
+  } catch (err) {
+    console.error("Failed to run updater:", err);
+  }
+
   ipcMain.handle("ping", () => "pong");
+
   createWindow();
+
   // Register a global shortcut to open DevTools for the active webview
   globalShortcut.register("CommandOrControl+I", () => {
     mainWindow.openDevTools();
