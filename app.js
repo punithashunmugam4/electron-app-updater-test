@@ -74,11 +74,20 @@ const dirname = app.getAppPath();
 var preload_path = path.join(dirname, "preload.cjs");
 let mainWindow;
 app.commandLine.appendSwitch("log-level", "3"); // supression of dev tools warning in terminal
-if (typeof app.requestSingleInstanceLock === "function") {
-  if (!app.requestSingleInstanceLock()) {
-    app.quit();
-  }
+
+// Handle single instance
+const gotLock = app.requestSingleInstanceLock();
+if (!gotLock) {
+  app.quit();
+} else {
+  app.on("second-instance", () => {
+    if (mainWindow) {
+      if (mainWindow.isMinimized()) mainWindow.restore();
+      mainWindow.focus();
+    }
+  });
 }
+
 ipcMain.handle("get-webview-actions", async () => {
   try {
     const { readFile } = await import("fs/promises");
