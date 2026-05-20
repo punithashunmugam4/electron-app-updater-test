@@ -3,7 +3,7 @@ const fs = require("fs");
 const Database = require("better-sqlite3");
 const { app } = require("electron");
 
-const dbPath = path.join(app.getPath("userData"), "logger.db");
+const dbPath = path.join(app.getPath(), "logger.db");
 fs.mkdirSync(path.dirname(dbPath), { recursive: true });
 const db = new Database(dbPath);
 db.pragma("journal_mode = WAL");
