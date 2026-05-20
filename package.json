@@ -46,7 +46,11 @@
     "appId": "update-tester",
     "asar": true,
     "asarUnpack": [
-      "updater.js"
+      "updater.cjs",
+      "app.js",
+      "index.js",
+      "downloads.cjs",
+      "webviewActions.cjs"
     ],
     "files": [
       "**/*"

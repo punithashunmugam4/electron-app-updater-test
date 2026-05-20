@@ -1,6 +1,12 @@
 {
   "version": "1.1.0",
-  "changedFiles": ["index.js", "utils.js"],
+  "changedFiles": [
+    "index.js",
+    "updater.cjs",
+    "app.js",
+    "webviewActions.cjs",
+    "downloads.cjs"
+  ],
   "newDependencies": {
     "axios": "^1.4.0"
   }
