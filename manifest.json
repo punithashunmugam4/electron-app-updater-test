@@ -5,7 +5,8 @@
     "updater.cjs",
     "app.js",
     "webviewActions.cjs",
-    "downloads.cjs"
+    "downloads.cjs",
+    "package.json"
   ],
   "newDependencies": {
     "axios": "^1.4.0"

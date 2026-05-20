@@ -4,8 +4,44 @@ const fs = require("fs");
 const exec = require("child_process").exec;
 const { app } = require("electron");
 
+function getLocalVersion() {
+  // Prefer a persisted local hot-update version, then package.json, then app version.
+  const userDataPath = app.getPath("userData");
+  const persistedVersionFile = path.join(
+    userDataPath,
+    "app_files",
+    "version.json",
+  );
+
+  if (fs.existsSync(persistedVersionFile)) {
+    try {
+      const payload = JSON.parse(fs.readFileSync(persistedVersionFile, "utf8"));
+      if (payload && typeof payload.version === "string") {
+        return payload.version;
+      }
+    } catch (err) {
+      console.warn("Failed to read persisted version file:", err);
+    }
+  }
+
+  try {
+    const pkgJson = require(path.join(app.getAppPath(), "package.json"));
+    if (pkgJson && typeof pkgJson.version === "string") {
+      return pkgJson.version;
+    }
+  } catch (err) {
+    console.warn("Failed to read package.json version:", err);
+  }
+
+  if (typeof app.getVersion === "function") {
+    return app.getVersion();
+  }
+
+  return "0.0.0";
+}
+
 async function checkForFileUpdates() {
-  const currentVersion = "1.1.0"; // Your current local app version
+  const currentVersion = getLocalVersion();
 
   // Replace with your actual GitHub Username and Repository Name
   const GITHUB_USER = "punithashunmugam4";
@@ -19,8 +55,19 @@ async function checkForFileUpdates() {
     // 1. Fetch the manifest file from GitHub
     const response = await axios.get(`${baseUrl}/manifest.json`);
     const manifest = response.data;
+    console.log(
+      "Current version:",
+      currentVersion,
+      "Remote manifest version:",
+      manifest?.version,
+    );
 
-    if (manifest?.version !== currentVersion) {
+    if (!manifest?.version) {
+      console.warn("Manifest version missing; skipping update check.");
+      return;
+    }
+
+    if (manifest.version !== currentVersion) {
       const targetDir = path.join(app.getPath("userData"), "app_files");
 
       // 2. Loop through and download EVERY changed file listed in the manifest
@@ -36,6 +83,15 @@ async function checkForFileUpdates() {
         fs.writeFileSync(destPath, fileData.data);
       }
 
+      // Persist the updated version so the hot-updated files are recognized after restart.
+      fs.mkdirSync(path.dirname(path.join(targetDir, "version.json")), {
+        recursive: true,
+      });
+      fs.writeFileSync(
+        path.join(targetDir, "version.json"),
+        JSON.stringify({ version: manifest.version }),
+      );
+
       // 3. Handle Node Modules if they exist in the manifest
       if (
         manifest.newDependencies &&
@@ -46,11 +102,12 @@ async function checkForFileUpdates() {
           path.join(targetDir, "package.json"),
           JSON.stringify(localPkg),
         );
-
+        console.log("Running npm install for new dependencies...");
         exec("npm install --production", { cwd: targetDir }, (err) => {
           if (!err) restartApp();
         });
       } else {
+        console.log("No new dependencies. Restarting app...");
         restartApp();
       }
     }

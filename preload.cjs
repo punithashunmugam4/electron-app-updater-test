@@ -1,4 +1,65 @@
 const { contextBridge, ipcRenderer } = require("electron");
+const util = require("util");
+
+const originalConsole = {
+  log: console.log,
+  info: console.info,
+  warn: console.warn,
+  error: console.error,
+  debug: console.debug,
+};
+
+function sendRendererLog(level, ...args) {
+  const message = util.format(...args);
+  ipcRenderer.send("renderer-log", {
+    level,
+    message,
+    metadata: args
+      .slice(1)
+      .map((item) =>
+        typeof item === "string" ? item : util.inspect(item, { depth: 2 }),
+      ),
+  });
+}
+
+console.log = (...args) => {
+  sendRendererLog("info", ...args);
+  originalConsole.log(...args);
+};
+console.info = (...args) => {
+  sendRendererLog("info", ...args);
+  originalConsole.info(...args);
+};
+console.warn = (...args) => {
+  sendRendererLog("warn", ...args);
+  originalConsole.warn(...args);
+};
+console.error = (...args) => {
+  sendRendererLog("error", ...args);
+  originalConsole.error(...args);
+};
+console.debug = (...args) => {
+  sendRendererLog("debug", ...args);
+  originalConsole.debug(...args);
+};
+
+window.addEventListener("error", (event) => {
+  ipcRenderer.send("renderer-error", {
+    message: event.message,
+    filename: event.filename,
+    lineno: event.lineno,
+    colno: event.colno,
+    stack: event.error?.stack,
+  });
+});
+
+window.addEventListener("unhandledrejection", (event) => {
+  ipcRenderer.send("renderer-error", {
+    message: "UnhandledPromiseRejection",
+    reason: util.format(event.reason),
+    stack: event.reason?.stack,
+  });
+});
 
 console.log("preload.js loading");
 global.ipcRenderer = ipcRenderer;
@@ -15,6 +76,12 @@ contextBridge.exposeInMainWorld("electron", {
   invoke: (channel, ...args) => ipcRenderer.invoke(channel, ...args),
   sleep: (ms) => {
     return new Promise((resolve) => setTimeout(resolve, ms));
+  },
+  logActivity: (message, metadata) => {
+    ipcRenderer.send("renderer-log", { level: "info", message, metadata });
+  },
+  logError: (message, metadata) => {
+    ipcRenderer.send("renderer-error", { message, metadata });
   },
   getWebviewActions: async () => ipcRenderer.invoke("get-webview-actions"),
   moviesmod_script: `

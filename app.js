@@ -11,18 +11,74 @@ import { fileURLToPath } from "url";
 import contextMenu from "electron-context-menu";
 import electron from "electron";
 import fs from "fs";
+import util from "util";
 import { createRequire } from "module";
 const requireC = createRequire(import.meta.url);
+
+let logger = null;
+try {
+  logger = requireC(path.join(app.getAppPath(), "logger.cjs"));
+} catch (err) {
+  console.error("Failed to load logger module:", err);
+}
 
 const fetch = (...args) =>
   import("node-fetch").then(({ default: fetch }) => fetch(...args));
 import http from "http";
 
+const originalConsole = {
+  log: console.log,
+  info: console.info,
+  warn: console.warn,
+  error: console.error,
+  debug: console.debug,
+};
+
+function formatLogArgs(args) {
+  return args
+    .map((arg) =>
+      typeof arg === "string" ? arg : util.inspect(arg, { depth: 2 }),
+    )
+    .join(" ");
+}
+
+function writeLog(level, ...args) {
+  const message = formatLogArgs(args);
+  if (logger) {
+    if (typeof logger[level] === "function") {
+      logger[level](message);
+    } else if (typeof logger.log === "function") {
+      logger.log(level, message);
+    }
+  }
+  if (typeof originalConsole[level] === "function") {
+    originalConsole[level](...args);
+  }
+}
+
+console.log = (...args) => writeLog("info", ...args);
+console.info = (...args) => writeLog("info", ...args);
+console.warn = (...args) => writeLog("warn", ...args);
+console.error = (...args) => writeLog("error", ...args);
+console.debug = (...args) => writeLog("debug", ...args);
+
+process.on("uncaughtException", (error) => {
+  console.error("uncaughtException", error);
+});
+
+process.on("unhandledRejection", (reason) => {
+  console.error("unhandledRejection", reason);
+});
+
 const dirname = app.getAppPath();
 var preload_path = path.join(dirname, "preload.cjs");
 let mainWindow;
 app.commandLine.appendSwitch("log-level", "3"); // supression of dev tools warning in terminal
-app.singleInstanceLock();
+if (typeof app.requestSingleInstanceLock === "function") {
+  if (!app.requestSingleInstanceLock()) {
+    app.quit();
+  }
+}
 ipcMain.handle("get-webview-actions", async () => {
   try {
     const { readFile } = await import("fs/promises");
@@ -122,6 +178,29 @@ app.whenReady().then(() => {
   }
 
   ipcMain.handle("ping", () => "pong");
+
+  ipcMain.on("renderer-log", (event, payload) => {
+    if (!payload || !payload.level || !payload.message) return;
+    if (logger) {
+      const message = payload.message;
+      const metadata = payload.metadata || "";
+      if (typeof logger[payload.level] === "function") {
+        logger[payload.level](message, metadata);
+      } else if (typeof logger.log === "function") {
+        logger.log(payload.level, message, metadata);
+      }
+    }
+  });
+
+  ipcMain.on("renderer-error", (event, payload) => {
+    if (!payload) return;
+    const message = payload.message || "Renderer error";
+    const metadata = payload;
+    if (logger) {
+      logger.error(message, metadata);
+    }
+    originalConsole.error("Renderer error:", payload);
+  });
 
   createWindow();
 

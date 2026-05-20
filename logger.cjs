@@ -7,7 +7,8 @@ const dbPath = path.join(app.getPath("userData"), "logger.db");
 fs.mkdirSync(path.dirname(dbPath), { recursive: true });
 const db = new Database(dbPath);
 db.pragma("journal_mode = WAL");
-db.prepare(`
+db.prepare(
+  `
   CREATE TABLE IF NOT EXISTS logs (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     timestamp TEXT NOT NULL,
@@ -15,10 +16,11 @@ db.prepare(`
     message TEXT,
     metadata TEXT
   )
-`).run();
+`,
+).run();
 
 const insertLog = db.prepare(
-  "INSERT INTO logs (timestamp, level, message, metadata) VALUES (?, ?, ?, ?)"
+  "INSERT INTO logs (timestamp, level, message, metadata) VALUES (?, ?, ?, ?)",
 );
 
 function serializeMetadata(metadata) {
@@ -36,7 +38,12 @@ function serializeMetadata(metadata) {
 }
 
 function write(level, message, metadata = "") {
-  insertLog.run(new Date().toISOString(), level, String(message), serializeMetadata(metadata));
+  insertLog.run(
+    new Date().toISOString(),
+    level,
+    String(message),
+    serializeMetadata(metadata),
+  );
 }
 
 function info(message, metadata) {
