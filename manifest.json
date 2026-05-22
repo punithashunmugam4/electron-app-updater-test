@@ -1,5 +1,5 @@
 {
   "version": "1.0.4",
-  "changedFiles": ["downloads.cjs,scripts.js,package.json,app.js"],
+  "changedFiles": ["downloads.cjs", "scripts.js", "package.json", "app.js"],
   "newDependencies": {}
 }

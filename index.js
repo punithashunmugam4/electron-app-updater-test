@@ -295,8 +295,27 @@ activeWebview.addEventListener("beforeunload", (event) => {
 
 // Interact with webview content
 const interactwithwebview = (webview, script) => {
-  console.log("interact with webview");
-  webview.executeJavaScript(script);
+  let next = null;
+  function runScriptNode(nodeId) {
+    const node = script[nodeId];
+    if (!node) {
+      console.error(`Node with ID ${nodeId} not found in script.`);
+      return;
+    }
+    try {
+      console.log("interact with webview");
+      webview.executeJavaScript(node.metadata);
+      let tempNext = next;
+      if (next !== null && next !== tempNext) {
+        runScriptNode(next);
+      } else if (node.next !== null) {
+        runScriptNode(node.next);
+      }
+    } catch (error) {
+      console.error(`Error executing node ${nodeId}:`, error);
+    }
+  }
+  runScriptNode(1000);
 };
 
 window.addEventListener("DOMContentLoaded", () => {
@@ -306,7 +325,7 @@ window.addEventListener("DOMContentLoaded", () => {
     console.log("Interact with webview clicked", url);
     if (url.includes("https://moviesmod.farm/download")) {
       let webview = document.querySelector(".tab-content-frame.active");
-      interactwithwebview(webview, electron.moviesmod_script);
+      interactwithwebview(webview, electron.testScript);
     }
   });
 });

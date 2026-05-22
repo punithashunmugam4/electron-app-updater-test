@@ -84,6 +84,17 @@ contextBridge.exposeInMainWorld("electron", {
     ipcRenderer.send("renderer-error", { message, metadata });
   },
   getWebviewActions: async () => ipcRenderer.invoke("get-webview-actions"),
+  testScript: {
+    1000: { metadata: `if(false){next="1001"} else{next="1002"}`, next: 1001 },
+    1001: {
+      metadata: `console.log("True and running script Node 1001")`,
+      next: null,
+    },
+    1002: {
+      metadata: `console.log("False and running script Node 1002")`,
+      next: 1001,
+    },
+  },
   moviesmod_script: `
     function clickElement() {
       while(counter>0){
