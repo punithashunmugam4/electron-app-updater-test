@@ -1,5 +1,5 @@
 // const { ipcRenderer } = require("electron");
-// version 1.0.1
+// version 1.0.0
 const showDownloadModal = () => {
   const modal = document.getElementById("download-modal");
   modal.style.display = "block";

@@ -1,6 +1,6 @@
 {
   "name": "browser-app",
-  "version": "1.0.1",
+  "version": "1.0.0",
   "authors": "Punitha",
   "publisher": "Punitha",
   "type": "module",
@@ -44,7 +44,7 @@
   },
   "build": {
     "appId": "update-tester",
-    "asar": true,
+    "asar": false,
     "asarUnpack": [
       "updater.cjs",
       "app.js",
@@ -65,6 +65,12 @@
         "owner": "punithashunmugam4",
         "repo": "electron-app-updater-test"
       }
-    ]
+    ],
+    "nsis": {
+      "oneClick": false,
+      "perMachine": true,
+      "allowToChangeInstallationDirectory": true,
+      "script": "build/installer.nsi"
+    }
   }
 }

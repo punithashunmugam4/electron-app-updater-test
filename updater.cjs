@@ -64,19 +64,28 @@ async function checkForFileUpdates() {
     }
 
     if (manifest.version !== currentVersion) {
-      const targetDir = app.getAppPath();
+      // In a packaged app, app.getAppPath() points inside app.asar, which is not writable.
+      // Use userData for downloaded update files instead.
+
+      let targetDir = app.getAppPath();
 
       // 2. Loop through and download EVERY changed file listed in the manifest
       for (const filePath of manifest.changedFiles) {
         const fileUrl = `${baseUrl}/${filePath}`;
         const fileData = await axios.get(fileUrl, { responseType: "text" });
 
-        // Define local destination path inside userData
-        const destPath = path.join(targetDir, filePath);
-        console.log("Downloading files");
-        // Ensure folder structure (like targetDir/src/) exists before writing
-        fs.mkdirSync(path.dirname(destPath), { recursive: true });
-        fs.writeFileSync(destPath, fileData.data);
+        let destPath = path.join(targetDir, filePath);
+        console.log("Downloading files to", destPath);
+        try {
+          fs.mkdirSync(path.dirname(destPath), { recursive: true });
+          fs.writeFileSync(destPath, fileData.data);
+        } catch (err) {
+          console.error(`Failed to write updated file ${filePath}:`, err);
+          targetDir = app.getPath("userData");
+          destPath = path.join(targetDir, filePath);
+          fs.mkdirSync(path.dirname(destPath), { recursive: true });
+          fs.writeFileSync(destPath, fileData.data);
+        }
       }
 
       // Persist the updated version so the updated files are recognized after restart.
