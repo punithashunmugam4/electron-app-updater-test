@@ -1,6 +1,6 @@
 {
   "name": "browser-app",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "authors": "Punitha",
   "publisher": "Punitha",
   "type": "module",
@@ -54,7 +54,8 @@
       "logger.cjs",
       "package.json",
       "index.html",
-      "preload.cjs"
+      "preload.cjs",
+      "script.js"
     ],
     "files": [
       "**/*"
@@ -69,8 +70,7 @@
     "nsis": {
       "oneClick": false,
       "perMachine": true,
-      "allowToChangeInstallationDirectory": true,
-      "script": "build/installer.nsi"
+      "allowToChangeInstallationDirectory": true
     }
   }
 }
