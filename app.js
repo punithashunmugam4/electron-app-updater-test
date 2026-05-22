@@ -107,6 +107,7 @@ function getExecutablePath() {
 }
 
 function createWindow() {
+  console.log("Browser APP initializing...");
   mainWindow = new BrowserWindow({
     width: 800,
     height: 600,
