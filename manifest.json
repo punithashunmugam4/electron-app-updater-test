@@ -1,5 +1,11 @@
 {
-  "version": "1.0.4",
-  "changedFiles": ["downloads.cjs", "scripts.js", "package.json", "app.js"],
+  "version": "1.0.5",
+  "changedFiles": [
+    "package-lock.json",
+    "index.js",
+    "downloads.cjs",
+    "preload.cjs",
+    "app.js"
+  ],
   "newDependencies": {}
 }

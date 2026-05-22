@@ -1,6 +1,6 @@
 {
   "name": "browser-app",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "authors": "Punitha",
   "publisher": "Punitha",
   "type": "module",
@@ -55,7 +55,8 @@
       "package.json",
       "index.html",
       "preload.cjs",
-      "scripts.js"
+      "scripts.js",
+      "package-lock.json"
     ],
     "files": [
       "**/*"

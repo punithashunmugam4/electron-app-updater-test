@@ -99,7 +99,10 @@ async function checkForFileUpdates() {
         manifest.newDependencies &&
         Object.keys(manifest.newDependencies).length > 0
       ) {
-        const localPkg = { dependencies: manifest.newDependencies };
+        const localPkg = {
+          dependencies: manifest.newDependencies,
+          version: manifest.version,
+        };
         fs.writeFileSync(
           path.join(targetDir, "package.json"),
           JSON.stringify(localPkg),
@@ -114,6 +117,7 @@ async function checkForFileUpdates() {
       }
     }
   } catch (error) {
+    console.log(error);
     if (error.response && error.response.status === 404) {
       console.log(
         "Update manifest or update file not found on GitHub; skipping update check.",

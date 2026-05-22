@@ -323,10 +323,10 @@ window.addEventListener("DOMContentLoaded", () => {
   document.getElementById("interact-webview").addEventListener("click", () => {
     url = document.getElementById("url-bar").value;
     console.log("Interact with webview clicked", url);
-    if (url.includes("https://moviesmod.farm/download")) {
-      let webview = document.querySelector(".tab-content-frame.active");
-      interactwithwebview(webview, electron.testScript);
-    }
+    // if (url.includes("https://moviesmod.farm/download")) {
+    let webview = document.querySelector(".tab-content-frame.active");
+    interactwithwebview(webview, electron.testScript);
+    // }
   });
 });
 
