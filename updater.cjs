@@ -6,12 +6,8 @@ const { app } = require("electron");
 
 function getLocalVersion() {
   // Prefer a persisted local hot-update version, then package.json, then app version.
-  const userDataPath = app.getPath("userData");
-  const persistedVersionFile = path.join(
-    userDataPath,
-    "app_files",
-    "version.json",
-  );
+  const appPath = app.getAppPath();
+  const persistedVersionFile = path.join(appPath, "version.json");
 
   if (fs.existsSync(persistedVersionFile)) {
     try {
@@ -68,7 +64,7 @@ async function checkForFileUpdates() {
     }
 
     if (manifest.version !== currentVersion) {
-      const targetDir = path.join(app.getPath("userData"), "app_files");
+      const targetDir = app.getAppPath();
 
       // 2. Loop through and download EVERY changed file listed in the manifest
       for (const filePath of manifest.changedFiles) {
@@ -77,16 +73,13 @@ async function checkForFileUpdates() {
 
         // Define local destination path inside userData
         const destPath = path.join(targetDir, filePath);
-
+        console.log("Downloading files");
         // Ensure folder structure (like targetDir/src/) exists before writing
         fs.mkdirSync(path.dirname(destPath), { recursive: true });
         fs.writeFileSync(destPath, fileData.data);
       }
 
-      // Persist the updated version so the hot-updated files are recognized after restart.
-      fs.mkdirSync(path.dirname(path.join(targetDir, "version.json")), {
-        recursive: true,
-      });
+      // Persist the updated version so the updated files are recognized after restart.
       fs.writeFileSync(
         path.join(targetDir, "version.json"),
         JSON.stringify({ version: manifest.version }),

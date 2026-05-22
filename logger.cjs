@@ -2,8 +2,35 @@ const path = require("path");
 const fs = require("fs");
 const Database = require("better-sqlite3");
 const { app } = require("electron");
+// Prefer the app installation directory, but fall back to userData or cwd if not writable
+let targetDir = path.resolve(process.cwd());
+try {
+  if (app && typeof app.getAppPath === "function") {
+    targetDir = app.getAppPath();
+  }
+} catch (err) {
+  // ignore and keep cwd as fallback
+}
 
-const dbPath = path.join(app.getPath("userData"), "logger.db");
+// Ensure the logs directory is writable; if not, fall back to userData then cwd
+let logsDir = path.join(targetDir, "logs");
+try {
+  fs.mkdirSync(logsDir, { recursive: true });
+} catch (err) {
+  try {
+    if (app && typeof app.getPath === "function") {
+      targetDir = app.getPath("userData");
+      logsDir = path.join(targetDir, "logs");
+      fs.mkdirSync(logsDir, { recursive: true });
+    }
+  } catch (err2) {
+    // final fallback to cwd
+    targetDir = path.resolve(process.cwd());
+    logsDir = path.join(targetDir, "logs");
+    fs.mkdirSync(logsDir, { recursive: true });
+  }
+}
+const dbPath = path.join(targetDir, "logs", "logger.db");
 fs.mkdirSync(path.dirname(dbPath), { recursive: true });
 const db = new Database(dbPath);
 db.pragma("journal_mode = WAL");

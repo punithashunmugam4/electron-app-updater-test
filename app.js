@@ -102,14 +102,8 @@ ipcMain.handle("get-webview-actions", async () => {
 });
 
 function getExecutablePath() {
-  const userDataPath = app.getPath("userData");
-  const customIndex = path.join(userDataPath, "app_files", "index.js");
-
-  // If hot-updated files exist in userData, run them. Otherwise, run bundled files.
-  if (fs.existsSync(customIndex)) {
-    return customIndex;
-  }
-  return path.join(app.getAppPath(), "index.js"); // Fallback to root index.js
+  // Always use the app installation directory for loading app.js
+  return path.join(app.getAppPath(), "app.js");
 }
 
 function createWindow() {
