@@ -66,10 +66,6 @@ window.addEventListener("unhandledrejection", (event) => {
   });
 });
 
-const webviewStoredVars = {
-  next: null,
-};
-
 console.log("preload.js loading");
 global.ipcRenderer = ipcRenderer;
 global.msg = "Hello Global";
@@ -93,60 +89,7 @@ const electronApi = {
     ipcRenderer.send("renderer-error", { message, metadata });
   },
   getWebviewActions: async () => ipcRenderer.invoke("get-webview-actions"),
-  getNext: () => webviewStoredVars.next,
-  setNext: (value) => {
-    webviewStoredVars.next = value;
-  },
-  resetNext: () => {
-    webviewStoredVars.next = null;
-  },
-  testScript: {
-    1000: {
-      metadata: `console.log("Starting with Node 1000"); sleep(1000);
-      openNewTab("https://yts.bz/");
-      if (true) { 
-        "1002"; 
-      } else { 
-        "1001"; 
-      } `,
-      next: 1001,
-    },
-    1001: {
-      metadata: `console.log("True and running script Node 1001"); "complete";`,
-      next: null,
-    },
-    1002: {
-      metadata: `console.log("False and running script Node 1002")`,
-      next: 1001,
-    },
-  },
-  moviesmod_script: `
-    function clickElement() {
-      while(counter>0){
-        let XpathsCollection = document.querySelectorAll(".maxbutton-download-links");
-        console.log(XpathsCollection);
-        var open_link_e = Array.from(XpathsCollection).find((element) => {
-          let text = element.parentNode.previousElementSibling.innerText;
-          if (text != undefined && text.includes("720p")) {
-            return true;
-          }
-          return false;
-        });
-        if (open_link_e) {
-          openNewTab(open_link_e.href,electron.links_modpro_script);
-          counter=0;
-          console.log("Element found and clicked");
-          break;
-        } else {
-          console.log("Element not found, retrying...");
-          counter--;
-        }
-      }
-    }
-    clickElement();
-    sleep(10000);
 
-  `,
   links_modpro_script: `
         let server_x = "/html/body/div[1]/div/div/div/div/div/main/div/div/article/div/div[2]/div[2]/p[3]/a";
         let server_e = getElementByXpath(server_x);
