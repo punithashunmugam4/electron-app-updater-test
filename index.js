@@ -356,20 +356,23 @@ const interactwithwebview = async (script) => {
 
       // 3. Run the script
       const updatedNext = await currentWebview.executeJavaScript(node.metadata);
-      // const updatedNext = e.getNext();
       console.log("Updated next after executing node:", updatedNext);
       // 4. Determine the next node
       let nextNodeId = null;
-      if (updatedNext && updatedNext !== tempnext) {
-        nextNodeId = updatedNext;
+      if (
+        updatedNext &&
+        updatedNext != tempnext &&
+        updatedNext !== "complete"
+      ) {
+        nextNodeId = Number(updatedNext);
       } else if (node.next !== null) {
         nextNodeId = node.next;
       }
       tempnext = nextNodeId; // Update tempnext to the next node we're going to execute
-      console.log("Next node ID to execute:", nextNodeId);
+
       if (nextNodeId !== null) {
         // Give Electron a microscopic breath to process tab switches/navigating
-
+        console.log("Next node ID to execute:", nextNodeId);
         setTimeout(() => runScriptNode(nextNodeId), 100);
       } else {
         console.log("Script execution completed at node", nodeId);

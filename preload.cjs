@@ -112,7 +112,7 @@ const electronApi = {
       next: 1001,
     },
     1001: {
-      metadata: `console.log("True and running script Node 1001")`,
+      metadata: `console.log("True and running script Node 1001"); "complete";`,
       next: null,
     },
     1002: {
