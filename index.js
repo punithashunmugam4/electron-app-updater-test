@@ -9,13 +9,12 @@ const context_listener = (event) => {
     x: event.params.x,
     y: event.params.y,
   };
-  window.electron.showContextMenu(params);
+  e.showContextMenu(params);
 };
 webview.addEventListener("context-menu", context_listener);
 
 let actions = "";
-window.electron
-  .getWebviewActions()
+e.getWebviewActions()
   .then((data) => {
     actions = data || "";
     eval(actions);
@@ -172,7 +171,7 @@ const addTab = (url = "https://moviesmod.farm/", script = "") => {
     url = document.getElementById("url-bar").value;
     newWebview.executeJavaScript(script);
     newWebview.addEventListener("did-navigate-in-page", (event) => {
-      newWebview.executeJavaScript(electron.continue_verification_script);
+      newWebview.executeJavaScript(e.continue_verification_script);
     });
     newWebview.addEventListener("beforeunload", (event) => {
       event.preventDefault();
@@ -294,28 +293,94 @@ activeWebview.addEventListener("beforeunload", (event) => {
 });
 
 // Interact with webview content
-const interactwithwebview = (webview, script) => {
-  let next = null;
-  function runScriptNode(nodeId) {
+// const interactwithwebview = async (webview, script) => {
+//   async function runScriptNode(nodeId) {
+//     const node = script[nodeId];
+//     if (!node) {
+//       console.error(`Node with ID ${nodeId} not found in script.`);
+//       return;
+//     }
+//     try {
+//       webview = document.querySelector(".tab-content-frame.active");
+//       console.log("interact with webview");
+//       const tempNext = e.getNext();
+//       await webview.executeJavaScript(node.metadata);
+//       const updatedNext = e.getNext();
+
+//       if (updatedNext !== null && updatedNext !== tempNext) {
+//         await runScriptNode(updatedNext);
+//       } else if (node.next !== null) {
+//         await runScriptNode(node.next);
+//       } else {
+//         console.log("Script execution completed at node", nodeId);
+//       }
+//     } catch (error) {
+//       console.error(`Error executing node ${nodeId}:`, error);
+//     }
+//   }
+//   await runScriptNode(1000);
+// };
+
+const interactwithwebview = async (script) => {
+  // Removed static 'webview' parameter
+  let tempnext = null;
+  // Helper to wait for a webview to finish loading its DOM
+  const domReady = (wv) =>
+    new Promise((resolve) => {
+      if (!wv.isLoading()) return resolve();
+      wv.addEventListener("dom-ready", () => resolve(), { once: true });
+    });
+
+  async function runScriptNode(nodeId) {
     const node = script[nodeId];
     if (!node) {
       console.error(`Node with ID ${nodeId} not found in script.`);
       return;
     }
+
     try {
-      console.log("interact with webview");
-      webview.executeJavaScript(node.metadata);
-      let tempNext = next;
-      if (next !== null && next !== tempNext) {
-        runScriptNode(next);
+      // 1. Always grab whichever webview is currently active AT THIS MOMENT
+      const currentWebview = document.querySelector(
+        ".tab-content-frame.active",
+      );
+
+      if (!currentWebview) {
+        console.error("No active webview found for node:", nodeId);
+        return;
+      }
+
+      // 2. Wait for the active webview to be fully ready if it just changed
+      await domReady(currentWebview);
+
+      console.log(`Executing node ${nodeId} on current active webview.`);
+
+      // 3. Run the script
+      const updatedNext = await currentWebview.executeJavaScript(node.metadata);
+      // const updatedNext = e.getNext();
+      console.log("Updated next after executing node:", updatedNext);
+      // 4. Determine the next node
+      let nextNodeId = null;
+      if (updatedNext && updatedNext !== tempnext) {
+        nextNodeId = updatedNext;
       } else if (node.next !== null) {
-        runScriptNode(node.next);
+        nextNodeId = node.next;
+      }
+      tempnext = nextNodeId; // Update tempnext to the next node we're going to execute
+      console.log("Next node ID to execute:", nextNodeId);
+      if (nextNodeId !== null) {
+        // Give Electron a microscopic breath to process tab switches/navigating
+
+        setTimeout(() => runScriptNode(nextNodeId), 100);
+      } else {
+        console.log("Script execution completed at node", nodeId);
       }
     } catch (error) {
       console.error(`Error executing node ${nodeId}:`, error);
     }
   }
-  runScriptNode(1000);
+
+  // Start with the initial node
+  await runScriptNode(1000);
 };
 
 window.addEventListener("DOMContentLoaded", () => {
@@ -323,10 +388,10 @@ window.addEventListener("DOMContentLoaded", () => {
   document.getElementById("interact-webview").addEventListener("click", () => {
     url = document.getElementById("url-bar").value;
     console.log("Interact with webview clicked", url);
-    // if (url.includes("https://moviesmod.farm/download")) {
     let webview = document.querySelector(".tab-content-frame.active");
-    interactwithwebview(webview, electron.testScript);
-    // }
+    interactwithwebview(e.testScript).catch((error) => {
+      console.error("Error interacting with webview:", error);
+    });
   });
 });
 
@@ -343,16 +408,17 @@ document
   .addEventListener("click", reloadWebview);
 
 // Listen for the 'open-webview-devtools' event from the main process
-window.electron.receive("open-webview-devtools", () => {
+e.receive("open-webview-devtools", () => {
   let activeWebview = document.querySelector(".tab-content-frame.active");
   activeWebview?.openDevTools();
 });
 
-window.electron.receive("create-new-tab", (data) => {
-  addTab(data.url, data.script);
+e.receive("create-new-tab", (data) => {
+  console.log("Creating new tab from webview action:", data.url, data.script);
+  addTab(data.url, data.script || "");
 });
 
-window.electron.receive("inspect-element", (event) => {
+e.receive("inspect-element", (event) => {
   webview = document.querySelector(".tab-content-frame.active");
   webview?.inspectElement(event.x, event.y);
 });

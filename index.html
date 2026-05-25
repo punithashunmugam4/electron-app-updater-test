@@ -110,6 +110,17 @@
         document.getElementById("url-bar").value = url;
         document.querySelector(".tab-content-frame").src = url;
         document.querySelector(".tab.active").setAttribute("data-url", url);
+
+        if (window.electron && typeof window.electron.invoke === "function") {
+          window.electron
+            .invoke("get-app-version")
+            .then((version) => {
+              document.title = `Browser-app v${version}`;
+            })
+            .catch((err) => {
+              console.warn("Failed to read app version:", err);
+            });
+        }
       };
     </script>
     <link

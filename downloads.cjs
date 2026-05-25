@@ -34,7 +34,7 @@ const updateDownloadProgress = (url, progress) => {
 };
 
 // Listen for download progress messages from the main process
-window.electron.receive("download-progress", (message) => {
+e.receive("download-progress", (message) => {
   console.log("Received download progress:", message.url, message.progress);
   updateDownloadProgress(message.url, message.progress);
 });

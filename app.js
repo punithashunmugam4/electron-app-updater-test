@@ -14,6 +14,7 @@ import fs from "fs";
 import util from "util";
 import { createRequire } from "module";
 const requireC = createRequire(import.meta.url);
+import store from "electron-store";
 
 let logger = null;
 try {
@@ -111,15 +112,16 @@ function createWindow() {
   mainWindow = new BrowserWindow({
     width: 800,
     height: 600,
+    title: `Browser App - v${app.getVersion()}`,
     webPreferences: {
       preload: path.join(app.getAppPath(), "preload.cjs"),
-      enableRemoteModule: false,
+      // enableRemoteModule: false,
       webviewTag: true,
       nodeIntegration: true,
+      nodeIntegrationInSubFrames: true,
       backgroundThrottling: false,
       nativeWindowOpen: true,
       contextIsolation: true,
-      // sandbox: false,
       webSecurity: true,
     },
   });
@@ -182,6 +184,7 @@ app.whenReady().then(() => {
   }
 
   ipcMain.handle("ping", () => "pong");
+  ipcMain.handle("get-app-version", () => app.getVersion());
 
   ipcMain.on("renderer-log", (event, payload) => {
     if (!payload || !payload.level || !payload.message) return;
@@ -254,9 +257,14 @@ app.whenReady().then(() => {
   });
 
   // Handle open-new-tab event
-  ipcMain.on("open-new-tab", (event, url) => {
-    console.log("Received open-new-tab message with URL:", url);
-    mainWindow.webContents.send("create-new-tab", url);
+  ipcMain.on("open-new-tab", (event, data) => {
+    console.log(
+      "Received open-new-tab message with URL:",
+      data.url,
+      "script:",
+      data.script,
+    );
+    mainWindow.webContents.send("create-new-tab", data);
   });
 });
 

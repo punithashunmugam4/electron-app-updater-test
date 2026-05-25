@@ -1,5 +1,4 @@
 const { contextBridge, ipcRenderer } = require("electron");
-const util = require("util");
 
 const originalConsole = {
   log: console.log,
@@ -9,16 +8,22 @@ const originalConsole = {
   debug: console.debug,
 };
 
+function formatArg(arg) {
+  if (typeof arg === "string") return arg;
+  if (arg instanceof Error) return arg.stack || arg.message;
+  try {
+    return JSON.stringify(arg, null, 2);
+  } catch {
+    return String(arg);
+  }
+}
+
 function sendRendererLog(level, ...args) {
-  const message = util.format(...args);
+  const message = args.map(formatArg).join(" ");
   ipcRenderer.send("renderer-log", {
     level,
     message,
-    metadata: args
-      .slice(1)
-      .map((item) =>
-        typeof item === "string" ? item : util.inspect(item, { depth: 2 }),
-      ),
+    metadata: args.slice(1).map(formatArg),
   });
 }
 
@@ -56,16 +61,20 @@ window.addEventListener("error", (event) => {
 window.addEventListener("unhandledrejection", (event) => {
   ipcRenderer.send("renderer-error", {
     message: "UnhandledPromiseRejection",
-    reason: util.format(event.reason),
+    reason: formatArg(event.reason),
     stack: event.reason?.stack,
   });
 });
+
+const webviewStoredVars = {
+  next: null,
+};
 
 console.log("preload.js loading");
 global.ipcRenderer = ipcRenderer;
 global.msg = "Hello Global";
 
-contextBridge.exposeInMainWorld("electron", {
+const electronApi = {
   showContextMenu: (params) => ipcRenderer.send("show-context-menu", params),
   send: (channel, data) => {
     ipcRenderer.send(channel, data);
@@ -84,8 +93,24 @@ contextBridge.exposeInMainWorld("electron", {
     ipcRenderer.send("renderer-error", { message, metadata });
   },
   getWebviewActions: async () => ipcRenderer.invoke("get-webview-actions"),
+  getNext: () => webviewStoredVars.next,
+  setNext: (value) => {
+    webviewStoredVars.next = value;
+  },
+  resetNext: () => {
+    webviewStoredVars.next = null;
+  },
   testScript: {
-    1000: { metadata: `if(false){next="1001"} else{next="1002"}`, next: 1001 },
+    1000: {
+      metadata: `console.log("Starting with Node 1000"); sleep(1000);
+      openNewTab("https://yts.bz/");
+      if (true) { 
+        "1002"; 
+      } else { 
+        "1001"; 
+      } `,
+      next: 1001,
+    },
     1001: {
       metadata: `console.log("True and running script Node 1001")`,
       next: null,
@@ -195,4 +220,6 @@ contextBridge.exposeInMainWorld("electron", {
         location.href = two_steps_btn.href;
         console.log("two_steps_btn");
       }`,
-});
+};
+contextBridge.exposeInMainWorld("electron", electronApi);
+contextBridge.exposeInMainWorld("e", electronApi);
