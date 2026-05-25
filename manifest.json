@@ -1,8 +1,7 @@
 {
-  "version": "1.1.2",
+  "version": "1.0.0",
   "changedFiles": [
     "package-lock.json",
-    "index.html",
     "package.json",
     "preload.cjs",
     "app.js",

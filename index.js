@@ -24,7 +24,7 @@ try {
 } catch (err) {
   console.error("Error loading webviewActions.cjs via getWebviewActions:", err);
 }
-console.log("sleep finished,1000");
+
 var url = document.getElementById("url-bar").value;
 var activeWebview = webview;
 

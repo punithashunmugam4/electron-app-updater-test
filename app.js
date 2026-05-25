@@ -16,6 +16,8 @@ import { createRequire } from "module";
 const requireC = createRequire(import.meta.url);
 import store from "electron-store";
 
+global.stored_vars = {};
+
 let logger = null;
 try {
   logger = requireC(path.join(app.getAppPath(), "logger.cjs"));
@@ -266,6 +268,18 @@ app.whenReady().then(() => {
     );
     mainWindow.webContents.send("create-new-tab", data);
   });
+});
+
+ipcMain.handle("get-global-var", (event, key) => {
+  return global.stored_vars[key];
+});
+
+ipcMain.on("set-global-var", (event, key, value) => {
+  global.stored_vars = { ...global.stored_vars, [key]: value };
+});
+
+ipcMain.on("reset-global-var", () => {
+  global.stored_vars = {};
 });
 
 app.on("window-all-closed", () => {

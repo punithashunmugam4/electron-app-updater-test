@@ -102,6 +102,7 @@ const moviesmod_script = {
     console.log("Running script Node 1000"); 
     openNewTab("https://moviesmod.farm/download-defendor-2009-hindi-english-480p-720p-1080p/");
     console.log("End of Node 1000");
+    globalVars.set("mySharedValue", "New global var set");
     ({
         nextState: "1001",
         saveData: { mySharedValue: "Hello from Tab 1!" }
@@ -110,11 +111,14 @@ const moviesmod_script = {
     next: 1001,
   },
   1001: {
-    metadata: (sharedData) => `console.log("Running script Node 1001");  
+    metadata: (sharedData) => `
+    let open_link_e;
+   (async () => { console.log("Running script Node 1001");  
     console.log("Retrieved data from previous tab:", ${JSON.stringify(sharedData.mySharedValue)});
- 
+    let store =await globalVars.get("mySharedValue");
+ console.log("Global stored vars",store);
     let XpathsCollection = document.querySelectorAll(".maxbutton-download-links");
-     let open_link_e;
+     
             console.log(XpathsCollection);
             if (XpathsCollection && XpathsCollection.length > 0) {
                open_link_e = Array.from(XpathsCollection).find((element) => {
@@ -130,7 +134,8 @@ const moviesmod_script = {
               console.log("open_link_e:", open_link_e);
               ({nextState:"1002",
               saveData:{ open_link_e:  open_link_e_xpath}
-              });`,
+              });
+              })();`,
     next: 1002,
   },
   1002: {

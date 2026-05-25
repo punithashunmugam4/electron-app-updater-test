@@ -166,3 +166,10 @@ const electronApi = {
 };
 contextBridge.exposeInMainWorld("electron", electronApi);
 contextBridge.exposeInMainWorld("e", electronApi);
+
+const globalVars = {
+  get: (key) => ipcRenderer.invoke("get-global-var", key),
+  set: (key, value) => ipcRenderer.send("set-global-var", key, value),
+  reset: () => ipcRenderer.send("reset-global-var"),
+};
+contextBridge.exposeInMainWorld("globalVars", globalVars);
