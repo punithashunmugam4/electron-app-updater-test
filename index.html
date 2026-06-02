@@ -3,111 +3,11 @@
   <head>
     <meta charset="UTF-8" />
     <title>Browser-app</title>
-    <style>
-      .tabs {
-        display: flex;
-        margin-bottom: 5px;
-      }
-      .tab,
-      #add-tab,
-      #interact-webview {
-        padding: 5px;
-        border: 1px solid #ccc;
-        margin-right: 5px;
-        cursor: pointer;
-      }
-      .tab.active {
-        background-color: #ddd;
-      }
-      .close-tab {
-        border: none;
-        /* border-radius: 50%; */
-        color: #aaa;
-        width: 20px;
-        height: 20px;
-        cursor: pointer;
-        font-weight: bold;
-        font-size: large;
-        padding: 0;
-      }
-
-      .close-tab:hover,
-      .close-tab:focus {
-        color: black;
-        text-decoration: none;
-        cursor: pointer;
-      }
-      webview.tab-content-frame {
-        width: 100%;
-        height: calc(100vh - 100px);
-        border: none;
-      }
-      webview.hidden {
-        display: none;
-      }
-      #url-bar {
-        width: 88%;
-        padding: 10px;
-        margin-bottom: 20px;
-        background-size: 0% 100%;
-        background-repeat: no-repeat;
-        border-radius: 20px;
-        border-color: #ccc;
-        background-color: #eee;
-        background-image: linear-gradient(to right, #ddd, #ddd);
-      }
-      .btn {
-        padding: 5px 5px;
-        background-color: #007bff;
-        color: white;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        transition: background-color 0.3s ease;
-      }
-      .btn:hover {
-        background-color: #0056b3;
-      }
-      /* Add some basic styling for the modal */
-      .modal {
-        display: none;
-        position: fixed;
-        z-index: 1;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        overflow: auto;
-        background-color: rgb(0, 0, 0);
-        background-color: rgba(0, 0, 0, 0.4);
-      }
-
-      .modal-content {
-        background-color: #fefefe;
-        margin: 15% auto;
-        padding: 20px;
-        border: 1px solid #888;
-        width: 80%;
-      }
-
-      .close {
-        color: #aaa;
-        float: right;
-        font-size: 28px;
-        font-weight: bold;
-      }
-
-      .close:hover,
-      .close:focus {
-        color: black;
-        text-decoration: none;
-        cursor: pointer;
-      }
-    </style>
+    <link rel="stylesheet" href="style.css" />
     <script>
       window.onload = function () {
-        var url = "https://moviesmod.farm/";
-        document.getElementById("url-bar").value = url;
+        var url = "https://moviesmod.money/";
+        document.querySelector(".address-bar").value = url;
         document.querySelector(".tab-content-frame").src = url;
         document.querySelector(".tab.active").setAttribute("data-url", url);
 
@@ -116,6 +16,8 @@
             .invoke("get-app-version")
             .then((version) => {
               document.title = `Browser-app v${version}`;
+              document.querySelector(".title-text").textContent =
+                `Orbit Browser v${version}`;
             })
             .catch((err) => {
               console.warn("Failed to read app version:", err);
@@ -125,44 +27,98 @@
     </script>
     <link
       rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20,400,0,0"
     />
   </head>
   <body>
-    <div class="tabs">
-      <div
-        class="tab active"
-        id="1"
-        data-tab-id="1"
-        data-url="https://moviesmod.farm/"
-      >
-        Home <button class="close-tab">&times;</button>
+    <header class="browser-header">
+      <div class="header-top-row">
+        <div class="app-title">
+          <span class="material-symbols-outlined title-icon">explore</span>
+          <span class="title-text">Orbit Browser</span>
+        </div>
+
+        <div class="window-controls">
+          <button class="control-btn" id="min-btn">
+            <span class="material-symbols-outlined">minimize</span>
+          </button>
+          <button class="control-btn" id="max-btn" data-state="maximized">
+            <span class="material-symbols-outlined max-icon">crop_square</span>
+            <span class="material-symbols-outlined restore-icon">flip_to_front</span>
+          </button>
+          <button class="control-btn close-btn" id="close-btn">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
       </div>
-      <div id="add-tab">&#43;</div>
-    </div>
-    <form id="url-form">
-      <input type="text" id="url-bar" placeholder="Enter URL here" />
-      <span id="interact-webview" class="btn">Auto</span>
-      <span class="btn" id="show-downloads"
-        ><i class="fas fa-download"></i
-      ></span>
-      <span id="reload-webview" class="btn"
-        ><i class="fas fa-sync-alt"></i
-      ></span>
-    </form>
-    <webview
-      preload="preload.cjs"
-      tabindex="1"
-      class="tab-content-frame active"
-      id="frame-1"
-      src="https://moviesmod.farm/"
-    ></webview>
+    </header>
+   <div class="header-bottom-row">
+      <div class="tab-bar">
+        <div
+          class="tab active"
+          id="1"
+          data-tab-id="1"
+          data-url="https://moviesmod.money/"
+        >
+          <span class="tab-title">Home</span>
+          <button class="close-tab-btn">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+        <button class="add-tab-btn">
+          <span class="material-symbols-outlined">add</span>
+        </button>
+      </div>
+      </div>
+    </header>
+    <nav class="nav-bar">
+      <div class="nav-buttons">
+        <button class="nav-btn" id="back-btn">
+          <span class="material-symbols-outlined">arrow_back</span>
+        </button>
+        <button class="nav-btn" id="forward-btn">
+          <span class="material-symbols-outlined">arrow_forward</span>
+        </button>
+        <button class="nav-btn" id="refresh-btn">
+          <span class="material-symbols-outlined">refresh</span>
+        </button>
+      </div>
+      <div class="address-bar-wrapper">
+        <span class="material-symbols-outlined lock-icon">lock</span>
+        <input
+          type="text"
+          class="address-bar"
+          value="https://moviesmod.money/"
+          placeholder="Search Google or type a URL"
+        />
+      </div>
+      <div class="nav-buttons">
+        <button id="interact-webview" class="nav-btn">Auto</button>
+        <button class="nav-btn" id="show-downloads">
+          <span class="material-symbols-outlined">download</span>
+        </button>
+        <button id="theme-toggle" class="nav-btn">
+          <span class="material-symbols-outlined">dark_mode</span>
+        </button>
+      </div>
+    </nav>
+    <main class="content-container">
+      <div class="web-view-wrapper active">
+        <webview
+          preload="preload.cjs"
+          tabindex="1"
+          class="tab-content-frame active"
+          id="frame-1"
+          src="https://moviesmod.money/"
+        ></webview>
+      </div>
+    </main>
     <script type="module" src="index.js"></script>
 
     <!-- Modal for download progress -->
     <div id="download-modal" class="modal">
+      <span class="close-modal">&times;</span>
       <div class="modal-content">
-        <span class="close">&times;</span>
         <h2>Download Progress</h2>
         <ul id="download-list"></ul>
       </div>

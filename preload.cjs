@@ -71,11 +71,18 @@ global.ipcRenderer = ipcRenderer;
 global.msg = "Hello Global";
 
 const electronApi = {
+  minimizeWindow: () => ipcRenderer.send("minimize-window"),
+  maximizeWindow: () => ipcRenderer.send("maximize-window"),
+  restoreWindow: () => ipcRenderer.send("restore-window"),
+  closeWindow: () => ipcRenderer.send("close-window"),
   showContextMenu: (params) => ipcRenderer.send("show-context-menu", params),
   send: (channel, data) => {
     ipcRenderer.send(channel, data);
   },
   receive: (channel, func) => {
+    console.log(
+      `Receiving message on channel: ${channel}, with func: ${func} `,
+    );
     ipcRenderer.on(channel, (event, ...args) => func(...args));
   },
   invoke: (channel, ...args) => ipcRenderer.invoke(channel, ...args),

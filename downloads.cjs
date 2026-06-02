@@ -11,7 +11,9 @@ const closeDownloadModal = () => {
 document
   .getElementById("show-downloads")
   .addEventListener("click", showDownloadModal);
-document.querySelector(".close").addEventListener("click", closeDownloadModal);
+document
+  .querySelector(".close-modal")
+  .addEventListener("click", closeDownloadModal);
 
 window.addEventListener("click", (event) => {
   const modal = document.getElementById("download-modal");

@@ -1,6 +1,45 @@
 // Ailas renderer process communication setup
 import { executionScript, interactWithWebview } from "./scripts.js";
 
+//Theme
+const toggleBtn = document.getElementById("theme-toggle");
+
+toggleBtn.addEventListener("click", () => {
+  // Check current theme state on the <html> tag
+  const currentTheme = document.documentElement.getAttribute("data-theme");
+
+  if (currentTheme === "light") {
+    document.documentElement.setAttribute("data-theme", "dark");
+    toggleBtn.innerHTML =
+      '<span class="material-symbols-outlined">light_mode</span>';
+  } else {
+    document.documentElement.setAttribute("data-theme", "light");
+    toggleBtn.innerHTML =
+      '<span class="material-symbols-outlined">dark_mode</span>';
+  }
+});
+
+//Window controls
+document.getElementById("min-btn").addEventListener("click", () => {
+  window.e.minimizeWindow();
+});
+document.getElementById("max-btn").addEventListener("click", () => {
+  if (
+    document.getElementById("max-btn").getAttribute("data-state") ===
+    "maximized"
+  ) {
+    window.e.restoreWindow();
+    document.getElementById("max-btn").setAttribute("data-state", "restored");
+  } else {
+    window.e.maximizeWindow();
+    document.getElementById("max-btn").setAttribute("data-state", "maximized");
+  }
+});
+
+document.getElementById("close-btn").addEventListener("click", () => {
+  window.e.closeWindow();
+});
+
 var webview = document.querySelector(".tab-content-frame.active");
 const context_listener = (event) => {
   webview = document.querySelector(".tab-content-frame.active");
@@ -10,6 +49,7 @@ const context_listener = (event) => {
     x: event.params.x,
     y: event.params.y,
   };
+  console.log("Context menu event at:", params);
   e.showContextMenu(params);
 };
 webview.addEventListener("context-menu", context_listener);
@@ -25,12 +65,12 @@ try {
   console.error("Error loading webviewActions.cjs via getWebviewActions:", err);
 }
 
-var url = document.getElementById("url-bar").value;
+var url = document.querySelector(".address-bar").value;
 var activeWebview = webview;
 
-document.getElementById("url-form").addEventListener("submit", (event) => {
+document.querySelector(".address-bar").addEventListener("change", (event) => {
   event.preventDefault();
-  url = document.getElementById("url-bar").value;
+  url = document.querySelector(".address-bar").value;
   console.log("URL submitted:", url);
   if (document.querySelectorAll(".tab").length > 0) {
     const activeTab = document.querySelector(".tab.active");
@@ -56,7 +96,7 @@ const tabclicked = (event) => {
   var url = event.currentTarget.getAttribute("data-url");
   document.getElementById(`frame-${tabId}`).classList.remove("hidden");
   document.getElementById(`frame-${tabId}`).classList.add("active");
-  document.getElementById("url-bar").value = url;
+  document.querySelector(".address-bar").value = url;
 };
 
 const closeTab = (event) => {
@@ -97,16 +137,16 @@ const closeTab = (event) => {
       newActiveWebview?.classList?.remove("hidden");
       newActiveWebview?.classList?.add("active");
       console.log("New active Tab id: ", newActiveTabId);
-      document.getElementById("url-bar").value =
+      document.querySelector(".address-bar").value =
         newActiveTab?.getAttribute("data-url");
     }
   } else {
-    document.getElementById("url-bar").value = "";
+    document.querySelector(".address-bar").value = "";
   }
 };
 
-const addTab = (url = "https://moviesmod.farm/", script = "") => {
-  url = url === "" ? "https://moviesmod.farm/" : url;
+const addTab = (url = "https://moviesmod.money/", script = "") => {
+  url = url === "" ? "https://moviesmod.money/" : url;
 
   document.querySelectorAll(".tab").forEach((tab) => {
     tab.classList.remove("active");
@@ -131,13 +171,17 @@ const addTab = (url = "https://moviesmod.farm/", script = "") => {
   // Extract hostname from URL to use as tab name
   const urlObj = new URL(url);
   const tabName = urlObj.hostname.replace("www.", "");
-  newElement.innerHTML = `${tabName} <button class="close-tab">&times;</button>`;
+  newElement.innerHTML = `<span class="tab-title">${tabName} </span><button class="close-tab-btn">
+            <span class="material-symbols-outlined">close</span>
+          </button>`;
 
   newElement.addEventListener("click", tabclicked);
-  newElement.querySelector(".close-tab").addEventListener("click", closeTab);
+  newElement
+    .querySelector(".close-tab-btn")
+    .addEventListener("click", closeTab);
   document
-    .querySelector(".tabs")
-    .insertBefore(newElement, document.getElementById("add-tab"));
+    .querySelector(".tab-bar")
+    .insertBefore(newElement, document.querySelector(".add-tab-btn"));
 
   let newWebview = document.createElement("webview");
   newWebview.classList.add("tab-content-frame");
@@ -145,7 +189,9 @@ const addTab = (url = "https://moviesmod.farm/", script = "") => {
   newWebview.setAttribute("id", `frame-${newTabId}`);
   newWebview.setAttribute("src", url);
   newWebview.preload = "preload.cjs";
-  document.body.appendChild(newWebview);
+  let webview_wrapper = document.querySelector(".web-view-wrapper");
+  webview_wrapper.appendChild(newWebview);
+  // document.body.appendChild(newWebview);
 
   // Inject common functions into the new webview
   newWebview.addEventListener("dom-ready", () => {
@@ -155,16 +201,16 @@ const addTab = (url = "https://moviesmod.farm/", script = "") => {
   // Add event listeners for the new webview
   newWebview.addEventListener("did-start-loading", () => {
     console.log("Webview started loading");
-    document.getElementById("url-bar").style.backgroundSize = "0% 100%";
+    document.querySelector(".address-bar").style.backgroundSize = "0% 100%";
   });
 
   newWebview.addEventListener("did-stop-loading", () => {
     console.log("Webview stopped loading");
-    document.getElementById("url-bar").style.backgroundSize = "100% 100%";
+    document.querySelector(".address-bar").style.backgroundSize = "100% 100%";
     setTimeout(() => {
-      document.getElementById("url-bar").style.backgroundSize = "0% 100%";
+      document.querySelector(".address-bar").style.backgroundSize = "0% 100%";
     }, 500);
-    url = document.getElementById("url-bar").value;
+    url = document.querySelector(".address-bar").value;
     newWebview.executeJavaScript(script);
     newWebview.addEventListener("did-navigate-in-page", (event) => {
       newWebview.executeJavaScript(e.continue_verification_script);
@@ -183,13 +229,13 @@ const addTab = (url = "https://moviesmod.farm/", script = "") => {
 
   newWebview.addEventListener("did-navigate", (event) => {
     console.log("Webview navigated to:", event.url);
-    document.getElementById("url-bar").value = event.url;
+    document.querySelector(".address-bar").value = event.url;
     newElement.setAttribute("data-url", event.url);
   });
 
   newWebview.addEventListener("did-navigate-in-page", (event) => {
     console.log("Webview navigated in page to:", event.url);
-    document.getElementById("url-bar").value = event.url;
+    document.querySelector(".address-bar").value = event.url;
     newElement.setAttribute("data-url", event.url);
   });
 
@@ -197,14 +243,14 @@ const addTab = (url = "https://moviesmod.farm/", script = "") => {
     if (!event.isMainFrame) return;
     newWebview.executeJavaScript("window.location.href").then((url) => {
       console.log("Webview frame finished loading:", url);
-      document.getElementById("url-bar").value = url;
+      document.querySelector(".address-bar").value = url;
       newElement.setAttribute("data-url", url);
     });
   });
 
   newWebview.addEventListener("did-fail-load", (event) => {
     console.log("Failed to load:", event.errorDescription);
-    document.getElementById("url-bar").value =
+    document.querySelector(".address-bar").value =
       `Error: ${event.errorDescription}`;
   });
   newWebview.addEventListener("context-menu", context_listener);
@@ -219,14 +265,14 @@ const waitForWebviewLoad = (
     callback();
   });
 };
-document.getElementById("add-tab").addEventListener("click", () => {
-  const url = document.getElementById("url-bar").value;
+document.querySelector(".add-tab-btn").addEventListener("click", () => {
+  const url = document.querySelector(".address-bar").value;
   addTab(url);
 });
 
 document.querySelectorAll(".tab").forEach((tab) => {
   tab.addEventListener("click", tabclicked);
-  tab.querySelector(".close-tab").addEventListener("click", closeTab);
+  tab.querySelector(".close-tab-btn").addEventListener("click", closeTab);
 });
 
 // Add event listeners for the initial webview
@@ -237,14 +283,14 @@ initialWebview.addEventListener("dom-ready", () => {
 
 initialWebview.addEventListener("did-start-loading", () => {
   console.log("Initial webview started loading");
-  document.getElementById("url-bar").style.backgroundSize = "0% 100%";
+  document.querySelector(".address-bar").style.backgroundSize = "0% 100%";
 });
 
 initialWebview.addEventListener("did-stop-loading", () => {
   console.log("Initial webview stopped loading");
-  document.getElementById("url-bar").style.backgroundSize = "100% 100%";
+  document.querySelector(".address-bar").style.backgroundSize = "100% 100%";
   setTimeout(() => {
-    document.getElementById("url-bar").style.backgroundSize = "0% 100%";
+    document.querySelector(".address-bar").style.backgroundSize = "0% 100%";
   }, 500);
 
   // Prevent page refresh, navigate and window.location.href functions
@@ -258,13 +304,13 @@ initialWebview.addEventListener("did-stop-loading", () => {
 
 initialWebview.addEventListener("did-navigate", (event) => {
   console.log("Initial webview navigated to:", event.url);
-  document.getElementById("url-bar").value = event.url;
+  document.querySelector(".address-bar").value = event.url;
   document.querySelector(".tab.active").setAttribute("data-url", event.url);
 });
 
 initialWebview.addEventListener("did-navigate-in-page", (event) => {
   console.log("Initial webview navigated in page to:", event.url);
-  document.getElementById("url-bar").value = event.url;
+  document.querySelector(".address-bar").value = event.url;
   document.querySelector(".tab.active").setAttribute("data-url", event.url);
 });
 
@@ -272,14 +318,15 @@ initialWebview.addEventListener("did-frame-finish-load", (event) => {
   if (!event.isMainFrame) return;
   initialWebview.executeJavaScript("window.location.href").then((url) => {
     console.log("Initial webview frame finished loading:", url);
-    document.getElementById("url-bar").value = url;
+    document.querySelector(".address-bar").value = url;
     document.querySelector(".tab.active").setAttribute("data-url", url);
   });
 });
 
 initialWebview.addEventListener("did-fail-load", (event) => {
   console.log("Failed to load:", event.errorDescription);
-  document.getElementById("url-bar").value = `Error: ${event.errorDescription}`;
+  document.querySelector(".address-bar").value =
+    `Error: ${event.errorDescription}`;
 });
 
 activeWebview.addEventListener("beforeunload", (event) => {
@@ -294,7 +341,7 @@ window.addEventListener("DOMContentLoaded", () => {
   document
     .getElementById("interact-webview")
     .addEventListener("click", async () => {
-      url = document.getElementById("url-bar").value;
+      url = document.querySelector(".address-bar").value;
       console.log("Interact with webview clicked", url);
       await interactWithWebview(executionScript);
     });
@@ -308,22 +355,30 @@ const reloadWebview = () => {
   }
 };
 
-document
-  .getElementById("reload-webview")
-  .addEventListener("click", reloadWebview);
+document.getElementById("refresh-btn").addEventListener("click", reloadWebview);
 
 // Listen for the 'open-webview-devtools' event from the main process
-e.receive("open-webview-devtools", () => {
-  let activeWebview = document.querySelector(".tab-content-frame.active");
-  activeWebview?.openDevTools();
+window.e.receive("open-webview-devtools", () => {
+  const activeWebview = document.querySelector(".tab-content-frame.active");
+  if (activeWebview) {
+    activeWebview.openDevTools();
+    console.log("Opened devtools for active webview");
+  } else {
+    console.warn("No active webview available to open devtools");
+  }
 });
 
-e.receive("create-new-tab", (data) => {
+window.e.receive("inspect-webview-element", (params) => {
+  const activeWebview = document.querySelector(".tab-content-frame.active");
+  if (activeWebview) {
+    activeWebview.inspectElement(params.x, params.y);
+    console.log("Inspecting webview element at", params.x, params.y);
+  } else {
+    console.warn("No active webview available to inspect element");
+  }
+});
+
+window.e.receive("create-new-tab", (data) => {
   console.log("Creating new tab from webview action:", data.url, data.script);
   addTab(data.url, data.script || "");
-});
-
-e.receive("inspect-element", (event) => {
-  webview = document.querySelector(".tab-content-frame.active");
-  webview?.inspectElement(event.x, event.y);
 });

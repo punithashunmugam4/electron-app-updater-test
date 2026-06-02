@@ -1,0 +1,395 @@
+/* ==========================================================================
+   1. Theme Variables (The Secret Sauce)
+   ========================================================================== */
+
+/* Default / Dark Theme variables */
+:root,
+[data-theme="dark"] {
+  --bg-color: #1e1e24;
+  --header-bg: #2b2b36;
+  --tab-active-bg: #3c3c4c;
+  --tab-inactive-bg: #23232d;
+  --text-main: #f0f0f5;
+  --text-muted: #9a9a9a;
+  --accent-color: #4a90e2;
+  --nav-bg: #3c3c4c;
+  --input-bg: #1e1e24;
+  --border-color: rgba(0, 0, 0, 0.2);
+  --lock-icon-color: #81c784;
+  --hover-overlay: rgba(255, 255, 255, 0.08);
+}
+
+/* Light Theme overrides */
+[data-theme="light"] {
+  --bg-color: #f1f3f4;
+  --header-bg: #dee1e6;
+  --tab-active-bg: #ffffff;
+  --tab-inactive-bg: #e8eaed;
+  --text-main: #202124;
+  --text-muted: #5f6368;
+  --accent-color: #1a73e8;
+  --nav-bg: #ffffff;
+  --input-bg: #f1f3f4;
+  --border-color: rgba(0, 0, 0, 0.12);
+  --lock-icon-color: #137333;
+  --hover-overlay: rgba(0, 0, 0, 0.06);
+}
+
+/* ==========================================================================
+   2. Global Reset & Core Layout
+   ========================================================================== */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, H_e_l_v_e_t_i_c_a,
+    Arial, sans-serif;
+  user-select: none;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+  background-color: var(--bg-color);
+  color: var(--text-main);
+  /* Smoothly transition background changes when toggling modes */
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
+}
+
+/* ==========================================================================
+   3. Browser Header & Tab Bar
+   ========================================================================== */
+
+/* --- Master Header Container --- */
+.browser-header {
+  background-color: var(--header-bg);
+  display: flex;
+  flex-direction: column; /* Stack top row above bottom row */
+  -webkit-app-region: drag; /* Window dragging enabled across the whole header space */
+}
+
+/* --- Top Row Setup --- */
+.header-top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 32px; /* Slightly shorter, elegant title bar row */
+  width: 100%;
+}
+
+.app-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-left: 12px;
+  color: var(--text-main);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+.title-icon {
+  font-size: 14px !important;
+  color: var(--accent-color);
+}
+
+.window-controls {
+  display: flex;
+  height: 100%;
+  -webkit-app-region: no-drag; /* Interactable window controls */
+}
+
+.control-btn {
+  background: none;
+  border: none;
+  color: var(--text-main);
+  width: 46px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.control-btn .material-symbols-outlined {
+  font-size: 14px;
+}
+
+.control-btn:hover {
+  background-color: var(--hover-overlay);
+}
+
+.control-btn.close-btn:hover {
+  background-color: #e81123 !important;
+  color: white !important;
+}
+
+#max-btn .restore-icon {
+  display: none;
+}
+#max-btn .max-icon {
+  display: block;
+}
+
+/* When the app updates the state to "restored" (meaning the window IS maximized, so click to restore) */
+#max-btn[data-state="restored"] .max-icon {
+  display: none;
+}
+#max-btn[data-state="restored"] .restore-icon {
+  display: block;
+}
+
+/* Optional: Slight tweak to make the restore icon look perfectly centered */
+.restore-icon {
+  transform: rotate(
+    180deg
+  ); /* Flips the symbol to look like standard OS overlapping windows */
+  font-size: 14px !important;
+}
+
+/* --- Bottom Row Setup (The Tab Bar) --- */
+.header-bottom-row {
+  display: flex;
+  align-items: flex-end;
+  height: 40px; /* Gives nice padded space around the 36px tabs */
+  padding-left: 8px;
+  padding-right: 8px;
+  -webkit-app-region: no-drag; /* Makes entire tab zone interactable without dragging window */
+}
+
+.tab-bar {
+  display: flex;
+  align-items: flex-end;
+  padding-left: 8px;
+  gap: 4px;
+  width: 100%;
+  overflow: hidden;
+}
+
+.tab {
+  display: flex;
+  align-items: center;
+  background-color: var(--tab-inactive-bg);
+  color: var(--text-muted);
+  flex: 1 1 auto;
+  min-width: 40px;
+  max-width: 240px;
+  height: 36px;
+  border-radius: 8px 8px 0 0;
+  padding: 0 12px;
+  cursor: pointer;
+  position: relative;
+  font-size: 13px;
+  transition:
+    background-color 0.2s,
+    color 0.2s;
+}
+
+.tab.active {
+  background-color: var(--nav-bg);
+  color: var(--text-main);
+}
+
+.tab:hover {
+  background-color: var(--hover-overlay);
+  color: var(--text-main);
+}
+
+.tab-favicon {
+  margin-right: 8px;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.tab-title {
+  flex-grow: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-right: 8px;
+}
+.add-tab-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 28px;
+  width: 28px;
+  border-radius: 50%;
+  margin-bottom: 4px; /* Suspends the plus sign aligned with tab elements */
+  margin-left: 4px;
+}
+
+.add-tab-btn:hover {
+  background-color: var(--hover-overlay);
+  color: var(--text-main);
+}
+.close-tab-btn {
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+  border-radius: 50%;
+}
+
+.close-tab-btn:hover {
+  background-color: var(--hover-overlay);
+}
+
+.close-tab-btn .material-symbols-outlined {
+  font-size: 14px;
+}
+
+/* ==========================================================================
+   4. Navigation Bar & Address Input
+   ========================================================================== */
+.nav-bar {
+  background-color: var(--nav-bg);
+  height: 48px;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  gap: 12px;
+  border-bottom: 1px solid var(--border-color);
+  transition:
+    background-color 0.3s ease,
+    border-color 0.3s ease;
+}
+
+.nav-buttons {
+  display: flex;
+  gap: 4px;
+}
+
+.nav-btn {
+  background: none;
+  border: none;
+  color: var(--text-main);
+  cursor: pointer;
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+}
+
+.nav-btn:hover {
+  background-color: var(--hover-overlay);
+}
+
+.address-bar-wrapper {
+  flex-grow: 1;
+  display: flex;
+  align-items: center;
+  background-color: var(--input-bg);
+  border-radius: 30px;
+  padding: 0 16px;
+  height: 32px;
+  border: 1px solid transparent;
+  transition:
+    background-color 0.3s ease,
+    border-color 0.2s;
+}
+
+.address-bar-wrapper:focus-within {
+  border-color: var(--accent-color);
+  background-color: var(
+    --nav-bg
+  ); /* Mimics browser expansion focus highlight */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.lock-icon {
+  font-size: 16px;
+  color: var(--lock-icon-color);
+  margin-right: 8px;
+  transition: color 0.3s ease;
+}
+
+.address-bar {
+  width: 100%;
+  background: none;
+  border: none;
+  color: var(--text-main);
+  font-size: 14px;
+  outline: none;
+}
+
+/* ==========================================================================
+   5. Content Wrapper & Webviews
+   ========================================================================== */
+.content-container {
+  flex-grow: 1;
+  position: relative;
+  background-color: #ffffff; /* Web content background should stay white */
+  width: 100%;
+}
+
+.web-view-wrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: none;
+}
+
+.web-view-wrapper.active {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+webview.active {
+  display: flex;
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+webview.hidden {
+  display: none;
+}
+
+#download-modal {
+  display: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: var(--nav-bg);
+  color: var(--text-main);
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.close-modal {
+  position: absolute;
+  top: -25px;
+  right: -15px;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 24px;
+  cursor: pointer;
+}
+.close-modal:hover {
+  color: black;
+  text-shadow: 0 0 5px rgba(255, 255, 255, 0.8);
+}

@@ -5,6 +5,7 @@ import {
   globalShortcut,
   session,
   Menu,
+  webContents,
 } from "electron";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -115,6 +116,9 @@ function createWindow() {
     width: 800,
     height: 600,
     title: `Browser App - v${app.getVersion()}`,
+    autoHideMenuBar: true,
+    show: false,
+    frame: false,
     webPreferences: {
       preload: path.join(app.getAppPath(), "preload.cjs"),
       // enableRemoteModule: false,
@@ -139,13 +143,28 @@ function createWindow() {
       {
         label: "Inspect Element",
         click: () => {
-          event.reply("inspect-element", params);
+          mainWindow.webContents.send("inspect-webview-element", params);
         },
       },
     ]);
     contextMenu.popup(BrowserWindow.fromWebContents(event.sender));
   });
 }
+
+ipcMain.on("minimize-window", () => {
+  if (mainWindow) mainWindow.minimize();
+});
+
+ipcMain.on("maximize-window", () => {
+  if (mainWindow) mainWindow.maximize();
+});
+ipcMain.on("restore-window", () => {
+  if (mainWindow) mainWindow.restore();
+});
+
+ipcMain.on("close-window", () => {
+  if (mainWindow) mainWindow.close();
+});
 
 app.whenReady().then(() => {
   const startScript = getExecutablePath();
