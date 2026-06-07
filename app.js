@@ -78,6 +78,30 @@ process.on("unhandledRejection", (reason) => {
 const dirname = app.getAppPath();
 var preload_path = path.join(dirname, "preload.cjs");
 let mainWindow;
+let shortcutsRegistered = false;
+
+function registerWindowShortcuts() {
+  if (shortcutsRegistered) return;
+  shortcutsRegistered = true;
+  globalShortcut.register("CommandOrControl+I", () => {
+    if (mainWindow && mainWindow.isFocused()) {
+      mainWindow.openDevTools();
+    }
+  });
+  globalShortcut.register("CommandOrControl+Shift+I", () => {
+    if (mainWindow && mainWindow.isFocused()) {
+      mainWindow.webContents.send("open-webview-devtools");
+    }
+  });
+}
+
+function unregisterWindowShortcuts() {
+  if (!shortcutsRegistered) return;
+  shortcutsRegistered = false;
+  globalShortcut.unregister("CommandOrControl+I");
+  globalShortcut.unregister("CommandOrControl+Shift+I");
+}
+
 app.commandLine.appendSwitch("log-level", "3"); // supression of dev tools warning in terminal
 
 // Handle single instance
@@ -192,6 +216,14 @@ ipcMain.handle("import-workflow", async (event, fileName) => {
   }
 });
 
+app.on("browser-window-focus", () => {
+  registerWindowShortcuts();
+});
+
+app.on("browser-window-blur", () => {
+  unregisterWindowShortcuts();
+});
+
 app.whenReady().then(() => {
   const startScript = getExecutablePath();
 
@@ -292,14 +324,6 @@ app.whenReady().then(() => {
     });
   });
   createWindow();
-
-  // Register a global shortcut to open DevTools for the active webview
-  globalShortcut.register("CommandOrControl+I", () => {
-    mainWindow.openDevTools();
-  });
-  globalShortcut.register("CommandOrControl+Shift+I", () => {
-    mainWindow.webContents.send("open-webview-devtools");
-  });
 });
 
 // Handle open-new-tab event
