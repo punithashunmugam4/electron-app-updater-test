@@ -6,10 +6,10 @@
     <link rel="stylesheet" href="style.css" />
     <script>
       window.onload = function () {
-        var url = "https://moviesmod.money/";
-        document.querySelector(".address-bar").value = url;
-        document.querySelector(".tab-content-frame").src = url;
-        document.querySelector(".tab.active").setAttribute("data-url", url);
+        // var url = "chatbot.html";
+        // document.querySelector(".address-bar").value = url;
+        // document.querySelector(".tab-content-frame").src = url;
+        // document.querySelector(".tab.active").setAttribute("data-url", url);
 
         if (window.electron && typeof window.electron.invoke === "function") {
           window.electron
@@ -44,31 +44,32 @@
           </button>
           <button class="control-btn" id="max-btn" data-state="maximized">
             <span class="material-symbols-outlined max-icon">crop_square</span>
-            <span class="material-symbols-outlined restore-icon">flip_to_front</span>
+            <span class="material-symbols-outlined restore-icon"
+              >flip_to_front</span
+            >
           </button>
           <button class="control-btn close-btn" id="close-btn">
             <span class="material-symbols-outlined">close</span>
           </button>
         </div>
       </div>
-    </header>
-   <div class="header-bottom-row">
-      <div class="tab-bar">
-        <div
-          class="tab active"
-          id="1"
-          data-tab-id="1"
-          data-url="https://moviesmod.money/"
-        >
-          <span class="tab-title">Home</span>
-          <button class="close-tab-btn">
-            <span class="material-symbols-outlined">close</span>
+      <div class="header-bottom-row">
+        <div class="tab-bar">
+          <div
+            class="tab active"
+            id="1"
+            data-tab-id="1"
+            data-url="chatbot.html"
+          >
+            <span class="tab-title">Home</span>
+            <button class="close-tab-btn">
+              <span class="material-symbols-outlined">close</span>
+            </button>
+          </div>
+          <button class="add-tab-btn">
+            <span class="material-symbols-outlined">add</span>
           </button>
         </div>
-        <button class="add-tab-btn">
-          <span class="material-symbols-outlined">add</span>
-        </button>
-      </div>
       </div>
     </header>
     <nav class="nav-bar">
@@ -93,7 +94,9 @@
         />
       </div>
       <div class="nav-buttons">
-        <button id="interact-webview" class="nav-btn">Auto</button>
+        <button id="interact-webview" class="nav-btn">
+          <span class="material-symbols-outlined">smart_toy</span>
+        </button>
         <button class="nav-btn" id="show-downloads">
           <span class="material-symbols-outlined">download</span>
         </button>
@@ -109,7 +112,7 @@
           tabindex="1"
           class="tab-content-frame active"
           id="frame-1"
-          src="https://moviesmod.money/"
+          src="chatbot.html"
         ></webview>
       </div>
     </main>

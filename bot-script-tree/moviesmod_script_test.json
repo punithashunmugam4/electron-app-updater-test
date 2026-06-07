@@ -1,0 +1,28 @@
+{
+  "1000": {
+    "name": "Start",
+    "conditionalRoutes": {
+      "next": 1001
+    },
+    "metadata": "console.log(\"Starting Node 1000\");\n openNewTab(\"https://moviesmod.money/download-office-romance-2026-hindi-english-480p-720p-1080p/\");\n globalVars.set(\"next\", \"next\");\n console.log(\"End of Node 1000\");"
+  },
+  "1001": {
+    "name": "Extract Link",
+    "conditionalRoutes": {
+      "open_link": 1002
+    },
+    "metadata": "console.log(\"Running Node 1001\");\n//Code here \n let open_link_e;\n    let XpathsCollection = document.querySelectorAll(\".maxbutton-download-links\");\n     \n            console.log(XpathsCollection);\n            if (XpathsCollection && XpathsCollection.length > 0) {\n               open_link_e = Array.from(XpathsCollection).find((element) => {\n                let text = element.parentNode.previousElementSibling.innerText;\n                if (text != undefined && text.includes(\"720p\")) {\n                  return true;\n                }\n                return false;\n              });\n            } \n              let open_link_e_xpath = getXpathFromElement(open_link_e); \n\n                console.log(\"open_link_e:\", open_link_e_xpath);\n              globalVars.set(\"open_link_x\",  open_link_e_xpath);\n                globalVars.set(\"next\", \"open_link\");\n\nconsole.log(\"End of Node 1001\");"
+  },
+  "1002": {
+    "name": "Click Download Link",
+    "conditionalRoutes": {
+      "Next": 1003
+    },
+    "metadata": "console.log(\"Running Node 1002\");\n //Code here\n  async function clickElement() {\n    let counter = 5; \n    let open_link_e_xpath = await globalVars.get(\"open_link_x\");\n    let open_link_e = getElementByXpath(open_link_e_xpath);\n      while(counter>0){\n        if (open_link_e) {\n          openNewTab(open_link_e.href);\n          counter=0;\n          console.log(\"Element found and link opended in new tab\");\n          break;\n        } else {\n          sleep(1000); \n          console.log(\"Element not found, retrying...\");\n          counter--;\n        }\n      }\n    }\n     clickElement();\n    sleep(5000);\nconsole.log(\"End of Node 1002\");"
+  },
+  "1003": {
+    "name": "End",
+    "conditionalRoutes": {},
+    "metadata": "console.log(\"Running Node 1003\");\n //Code here\nconsole.log(\"Bot ended\")\nconsole.log(\"End of Node 1003\");"
+  }
+}

@@ -48,9 +48,9 @@ const context_listener = (event) => {
   const params = {
     x: event.params.x,
     y: event.params.y,
+    url: event.params.linkURL,
   };
-  console.log("Context menu event at:", params);
-  e.showContextMenu(params);
+  window.e.showContextMenu(params);
 };
 webview.addEventListener("context-menu", context_listener);
 
@@ -59,7 +59,7 @@ try {
   (async function () {
     actions = await e.getWebviewActions();
     eval(actions);
-    console.log("Webview actions loaded in renderer", actions);
+    // console.log("Webview actions loaded in renderer", actions);
   })();
 } catch (err) {
   console.error("Error loading webviewActions.cjs via getWebviewActions:", err);
@@ -335,18 +335,28 @@ activeWebview.addEventListener("beforeunload", (event) => {
   event.returnValue = "";
 });
 
-// listen for the 'interact-webview' event on click
-window.addEventListener("DOMContentLoaded", () => {
-  console.log("DOM content loaded");
-  document
-    .getElementById("interact-webview")
-    .addEventListener("click", async () => {
-      url = document.querySelector(".address-bar").value;
-      console.log("Interact with webview clicked", url);
-      await interactWithWebview(executionScript);
-    });
-});
+document
+  .getElementById("interact-webview")
+  .addEventListener("click", async () => {
+    url = document.querySelector(".address-bar").value;
+    console.log("Interact with webview clicked", url);
+    await interactWithWebview(executionScript);
+  });
 
+//running automation via chatbot
+electron.receive("execute-bot-automation", async (file_details) => {
+  console.log("Excecute bot automation: ", file_details);
+  const importedScript = await electron.importWorkflowJSON(
+    file_details.fileName,
+  );
+
+  if (!importedScript || importedScript.error) {
+    if (importedScript?.error) alert(importedScript.error);
+  }
+  console.log("Imported workflow JSON:", importedScript);
+  await electron.sleep(5000);
+  await interactWithWebview(importedScript);
+});
 // Function to reload the active webview
 const reloadWebview = () => {
   activeWebview = document.querySelector(".tab-content-frame.active");
@@ -372,7 +382,6 @@ window.e.receive("inspect-webview-element", (params) => {
   const activeWebview = document.querySelector(".tab-content-frame.active");
   if (activeWebview) {
     activeWebview.inspectElement(params.x, params.y);
-    console.log("Inspecting webview element at", params.x, params.y);
   } else {
     console.warn("No active webview available to inspect element");
   }

@@ -96,7 +96,11 @@ const electronApi = {
     ipcRenderer.send("renderer-error", { message, metadata });
   },
   getWebviewActions: async () => ipcRenderer.invoke("get-webview-actions"),
-
+  importWorkflowJSON: (fileName) =>
+    ipcRenderer.invoke("import-workflow", fileName),
+  getAllbotsList: () => ipcRenderer.invoke("get-bot-list"),
+  runBotAutomation: (file_details) =>
+    ipcRenderer.send("run-bot-automation", file_details),
   links_modpro_script: `
         let server_x = "/html/body/div[1]/div/div/div/div/div/main/div/div/article/div/div[2]/div[2]/p[3]/a";
         let server_e = getElementByXpath(server_x);

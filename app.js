@@ -16,6 +16,7 @@ import util from "util";
 import { createRequire } from "module";
 const requireC = createRequire(import.meta.url);
 import store from "electron-store";
+var fsPromises = fs.promises;
 
 global.stored_vars = {};
 
@@ -146,6 +147,12 @@ function createWindow() {
           mainWindow.webContents.send("inspect-webview-element", params);
         },
       },
+      {
+        label: "Open New Tab",
+        click: () => {
+          mainWindow.webContents.send("create-new-tab", params);
+        },
+      },
     ]);
     contextMenu.popup(BrowserWindow.fromWebContents(event.sender));
   });
@@ -164,6 +171,25 @@ ipcMain.on("restore-window", () => {
 
 ipcMain.on("close-window", () => {
   if (mainWindow) mainWindow.close();
+});
+
+ipcMain.handle("import-workflow", async (event, fileName) => {
+  const json_filepath = path.join(
+    app.getAppPath(),
+    "bot-script-tree",
+    fileName,
+  );
+
+  try {
+    if (!fs.existsSync(json_filepath)) {
+      return { error: `File not found at specified path: ${json_filepath}` };
+    }
+    const rawData = fs.readFileSync(json_filepath, "utf-8");
+    return JSON.parse(rawData); // Safely parsed server-side
+  } catch (error) {
+    console.error("Failed to parse JSON file:", error);
+    return { error: "Invalid JSON structure" };
+  }
 });
 
 app.whenReady().then(() => {
@@ -229,17 +255,6 @@ app.whenReady().then(() => {
     }
     originalConsole.error("Renderer error:", payload);
   });
-
-  createWindow();
-
-  // Register a global shortcut to open DevTools for the active webview
-  globalShortcut.register("CommandOrControl+I", () => {
-    mainWindow.openDevTools();
-  });
-  globalShortcut.register("CommandOrControl+Shift+I", () => {
-    mainWindow.webContents.send("open-webview-devtools");
-  });
-
   // Handle download events
   session.defaultSession.on("will-download", (event, item, webContents) => {
     // Set the save path for the download
@@ -276,17 +291,26 @@ app.whenReady().then(() => {
       }
     });
   });
+  createWindow();
 
-  // Handle open-new-tab event
-  ipcMain.on("open-new-tab", (event, data) => {
-    console.log(
-      "Received open-new-tab message with URL:",
-      data.url,
-      "script:",
-      data.script,
-    );
-    mainWindow.webContents.send("create-new-tab", data);
+  // Register a global shortcut to open DevTools for the active webview
+  globalShortcut.register("CommandOrControl+I", () => {
+    mainWindow.openDevTools();
   });
+  globalShortcut.register("CommandOrControl+Shift+I", () => {
+    mainWindow.webContents.send("open-webview-devtools");
+  });
+});
+
+// Handle open-new-tab event
+ipcMain.on("open-new-tab", (event, data) => {
+  console.log(
+    "Received open-new-tab message with URL:",
+    data.url,
+    "script:",
+    data.script,
+  );
+  mainWindow.webContents.send("create-new-tab", data);
 });
 
 ipcMain.handle("get-global-var", (event, key) => {
@@ -301,12 +325,49 @@ ipcMain.on("reset-global-var", () => {
   global.stored_vars = {};
 });
 
+ipcMain.handle("get-bot-list", async () => {
+  const fileFormat = /\.(json)$/i;
+  const results = [];
+
+  async function get_file_list(dir) {
+    let entries;
+    try {
+      entries = await fsPromises.readdir(dir, { withFileTypes: true });
+    } catch (err) {
+      console.error("Failed to read directory:", dir, err);
+      return;
+    }
+
+    for (const entry of entries) {
+      const fullPath = path.join(dir, entry.name);
+
+      if (entry.isDirectory()) {
+        await walk(fullPath);
+      } else if (entry.isFile() && fileFormat.test(entry.name)) {
+        console.log("filename: ", entry.name);
+        results.push({
+          fileName: entry.name,
+          path: fullPath,
+        });
+      }
+    }
+  }
+  let files_path = path.join(app.getAppPath(), "bot-script-tree");
+  await get_file_list(files_path);
+  console.log("file list fetched: ", results);
+  return results;
+});
+
+ipcMain.on("run-bot-automation", (event, file_details) => {
+  console.log("Run-Bot-Automation", file_details);
+  mainWindow.webContents.send("execute-bot-automation", file_details);
+});
+
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") {
     app.quit();
   }
 });
-
 app.on("activate", () => {
   if (BrowserWindow.getAllWindows().length === 0) {
     createWindow();

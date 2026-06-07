@@ -59,6 +59,22 @@ function openNewTab(url, script) {
   }
 }
 
+function runMetadataAtCurrentNode() {
+  console.log("Running metadata for node", nodeId);
+  let nodeId = globalVars.get("currentNode");
+  let node = script[nodeId];
+  if (nodeId && node.metadata) {
+    try {
+      console.log(`Executing metadata for node ${nodeId}:`, node.metadata);
+      currentWebview.executeJavaScript(node.metadata);
+    } catch (error) {
+      console.error(`Error executing metadata for node ${nodeId}:`, error);
+    }
+  } else {
+    console.warn(`No metadata found for node ${nodeId}`);
+  }
+}
+
 var api_call = () => {
   console.log("API call executed");
 };
