@@ -13,12 +13,11 @@ import electron from "electron";
 import fs from "fs";
 import util from "util";
 import axios from "axios";
-import dotenv from "dotenv";
-dotenv.config();
-import pkg from "./package.json" with { type: "json" };
+// import dotenv from "dotenv";
+// dotenv.config();
 
 const tree_token =
-  pkg.TREE_TOKEN || process.env.TREE_TOKEN || "local_git_token_dev";
+  "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";
 
 console.log("Your Env Variable is:", tree_token);
 import { createRequire } from "module";
