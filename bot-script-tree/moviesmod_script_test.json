@@ -18,7 +18,7 @@
     "conditionalRoutes": {
       "Next": 1003
     },
-    "metadata": "console.log(\"Running Node 1002\");\n //Code here\n  async function clickElement() {\n    let counter = 5; \n    let open_link_e_xpath = await globalVars.get(\"open_link_x\");\n    let open_link_e = actions.getElementByXpath(open_link_e_xpath);\n      while(counter>0){\n        if (open_link_e) {\n          actions.openNewTab(open_link_e.href);\n          counter=0;\n          console.log(\"Element found and link opended in new tab\");\n          break;\n        } else {\n          sleep(1000); \n          console.log(\"Element not found, retrying...\");\n          counter--;\n        }\n      }\n    }\n     clickElement();\n    sleep(5000);\nconsole.log(\"End of Node 1002\");"
+    "metadata": "console.log(\"Running Node 1002\");\n //Code here\n  async function clickElement() {\n    let counter = 5; \n    let open_link_e_xpath = await globalVars.get(\"open_link_x\");\n    let open_link_e = actions.getElementByXpath(open_link_e_xpath);\n      while(counter>0){\n        if (open_link_e) {\n          actions.openNewTab(open_link_e.href);\n          counter=0;\n          console.log(\"Element found and link opended in new tab\");\n          break;\n        } else {\n          actions.sleep(1000); \n          console.log(\"Element not found, retrying...\");\n          counter--;\n        }\n      }\n    }\n     clickElement();\n    actions.sleep(5000);\nconsole.log(\"End of Node 1002\");"
   },
   "1003": {
     "name": "End",

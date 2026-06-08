@@ -114,7 +114,7 @@ const globalVars = {
 contextBridge.exposeInMainWorld("globalVars", globalVars);
 
 const actions = {
-  getElementByXpath: () => {
+  getElementByXpath: (path) => {
     return document.evaluate(
       path,
       document,
@@ -126,7 +126,7 @@ const actions = {
   sleep: (ms) => {
     return new Promise((resolve) => setTimeout(resolve, ms));
   },
-  getXpathFromElement: (element) => {
+  getXpathFromElement: function getXpathFromElement(element) {
     if (element && element.id) {
       // If the element has a unique ID, we can instantly form a reliable relative XPath
       return `//*[@id="${element.id}"]`;
@@ -162,11 +162,8 @@ const actions = {
   openNewTab: (url, script) => {
     console.log("Sending message to open new tab with URL:", url, script);
     // Use the context-bridge exposed API in the page context
-    if (window?.electron?.send) {
-      window.electron.send("open-new-tab", { url: url, script: script });
-    } else {
-      console.warn("window.electron.send not available, cannot open new tab");
-    }
+
+    ipcRenderer.send("open-new-tab", { url: url, script: script });
   },
 };
 contextBridge.exposeInMainWorld("actions", actions);
