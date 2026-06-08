@@ -17,7 +17,7 @@ import axios from "axios";
 // dotenv.config();
 
 const tree_token =
-  "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";
+  "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";
 
 console.log("Your Env Variable is:", tree_token);
 import { createRequire } from "module";
