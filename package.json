@@ -77,7 +77,7 @@
       "allowToChangeInstallationDirectory": true
     },
     "extraMetadata": {
-      "TREE_TOKEN": "g"
+      "TREE_TOKEN": ""
     }
   }
 }
