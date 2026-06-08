@@ -1,5 +1,17 @@
 {
-  "version": "1.0.0",
-  "changedFiles": ["package-lock.json", "package.json", "app.js"],
+  "version": "1.0.1",
+  "changedFiles": [
+    "package-lock.json",
+    "package.json",
+    "app.js",
+    "index.js",
+    "chatbot.js",
+    "home.html",
+    "home.css",
+    "scripts.js",
+    "preload.cjs",
+    "index.html",
+    "style.css"
+  ],
   "newDependencies": {}
 }
