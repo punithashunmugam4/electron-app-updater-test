@@ -6,11 +6,13 @@ const chatWindow = document.getElementById("chat-window");
 const closeChat = document.getElementById("close-chat");
 const chatMessages = document.getElementById("chat-messages");
 const userInput = document.getElementById("user-input");
-const activeTargetName = document.getElementById("active-target-name");
-const globalStatusDot = document.getElementById("global-status-dot");
-const canvasView = document.getElementById("canvas-view");
+const globalStatusDot = document.getElementById("bot-status");
 const chatForm = document.getElementById("chat-form");
 
+window.addEventListener("DOMContentLoaded", () => {
+  chatWindow.classList.add("open");
+  userInput.focus();
+});
 chatForm.addEventListener("submit", (event) => {
   event.preventDefault();
   handleMessageSubmit();
@@ -63,7 +65,7 @@ function handleMessageSubmit() {
                                     <strong style="display:block; font-size:0.85rem;">${botName} </strong>
                                     <span style="font-size:0.75rem; color:var(--text-muted); font-family:monospace;">${match.fileName}</span>
                                 </div>
-                                <span class="chip-action-label">Mount Target</span>
+                                <span class="chip-action-label">Select Bot</span>
                             </button>
                         `;
       });
@@ -71,7 +73,7 @@ function handleMessageSubmit() {
 
       botResponseContainer.innerHTML = `
                         <div>
-                            <div class="bubble">I found matching workflow profiles inside your tracking directory. Select a module below to link it to your active workspace:</div>
+                            <div class="bubble">I found matching bots inside your repo. Select a module below to link it to run your automation</div>
                             ${suggestionsHTML}
                             <span class="timestamp">${timeString}</span>
                         </div>
@@ -97,21 +99,13 @@ function selectBotProfile(botName, fileName, path) {
     minute: "2-digit",
   });
 
-  // Update Canvas UI Banner indicators
-  activeTargetName.textContent = fileName;
   globalStatusDot.classList.add("active");
-
-  // Update main window layout presentation state
-  canvasView.innerHTML = `
-                <span class="material-symbols-outlined" style="font-size: 4rem; color: var(--primary-hover); margin-bottom: 16px; text-shadow: 0 0 20px var(--primary-accent);">sync_saved_locally</span>
-                <h2 style="color:#ffffff;">${botName} Active</h2>
-                <p style="color: var(--text-muted); font-family: monospace; font-size:0.85rem; background: rgba(0,0,0,0.2); padding: 6px 12px; border-radius:6px; display:inline-block; margin-top:8px;">Linked file: ${fileName}</p>
-            `;
+  globalStatusDot.textContent = botName;
 
   // Confirm selection inside conversational log bubble
   appendMessageRow(
     "bot",
-    `Successfully mounted <strong>${botName}e</strong> into the active execution pipeline context. Grid coordinates have reset.`,
+    `Successfully started the <strong>${botName}</strong> bot.`,
     timeString,
   );
   chatMessages.scrollTop = chatMessages.scrollHeight;

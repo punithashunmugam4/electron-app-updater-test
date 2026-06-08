@@ -1,0 +1,137 @@
+:root {
+  --bg-color: #060609;
+  --border-color: rgba(255, 255, 255, 0.08);
+  --text-main: #f4f4f5;
+  --text-muted: #a1a1aa;
+  --primary-accent: #4f46e5;
+  --primary-hover: #6366f1;
+  --glow-color: rgba(79, 70, 229, 0.15);
+  --user-bubble: rgba(39, 39, 42, 0.8);
+  --bot-bubble: rgba(30, 27, 75, 0.8);
+}
+
+[data-theme="light"] {
+  --bg-color: #fafafa;
+  --border-color: rgba(0, 0, 0, 0.08);
+  --text-main: #18181b;
+  --text-muted: #71717a;
+  --primary-accent: #4f46e5;
+  --primary-hover: #4338ca;
+  --glow-color: rgba(79, 70, 229, 0.08);
+  --user-bubble: rgba(244, 244, 245, 0.9);
+  --bot-bubble: rgba(224, 231, 255, 0.9);
+}
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: "Inter", sans-serif;
+}
+
+/* --- Extraordinary Automation UI Background --- */
+body {
+  background-color: var(--bg-color);
+  color: var(--text-main);
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+
+/* Deep Ambient Radial Glows */
+body::before {
+  content: "";
+  position: absolute;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(
+    circle,
+    rgba(79, 70, 229, 0.2) 0%,
+    rgba(0, 0, 0, 0) 70%
+  );
+  top: -10%;
+  left: -10%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+body::after {
+  content: "";
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(
+    circle,
+    rgba(6, 182, 212, 0.15) 0%,
+    rgba(0, 0, 0, 0) 70%
+  );
+  bottom: -10%;
+  right: -10%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Animated Sci-Fi Grid Overlay */
+.automation-grid-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-size: 40px 40px;
+  background-position: center;
+  mask-image: radial-gradient(circle at center, black 40%, transparent 90%);
+  -webkit-mask-image: radial-gradient(
+    circle at center,
+    black 40%,
+    transparent 90%
+  );
+  z-index: 0;
+  animation: subtlePan 120s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes subtlePan {
+  from {
+    background-position: 0px 0px;
+  }
+  to {
+    background-position: 1000px 1000px;
+  }
+}
+
+/* Simulated Main Workspace Container */
+.workspace-canvas {
+  position: relative;
+  z-index: 1;
+  width: 90%;
+  height: 85%;
+  background: rgba(10, 10, 15, 0.4);
+  border: 1px solid var(--border-color);
+  border-radius: 24px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow:
+    inset 0 0 40px rgba(255, 255, 255, 0.01),
+    0 24px 64px rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.workspace-placeholder {
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.workspace-placeholder h2 {
+  color: #ffffff;
+  margin-bottom: 8px;
+  letter-spacing: -0.025em;
+}

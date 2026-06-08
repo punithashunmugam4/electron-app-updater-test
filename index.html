@@ -6,10 +6,11 @@
     <link rel="stylesheet" href="style.css" />
     <script>
       window.onload = function () {
-        // var url = "chatbot.html";
-        // document.querySelector(".address-bar").value = url;
-        // document.querySelector(".tab-content-frame").src = url;
-        // document.querySelector(".tab.active").setAttribute("data-url", url);
+        // var url = "https://moviesmod.army/";
+        var url = "home.html";
+        document.querySelector(".address-bar").value = url;
+        document.querySelector(".tab-content-frame").src = url;
+        document.querySelector(".tab.active").setAttribute("data-url", url);
 
         if (window.electron && typeof window.electron.invoke === "function") {
           window.electron
@@ -55,12 +56,7 @@
       </div>
       <div class="header-bottom-row">
         <div class="tab-bar">
-          <div
-            class="tab active"
-            id="1"
-            data-tab-id="1"
-            data-url="chatbot.html"
-          >
+          <div class="tab active" id="1" data-tab-id="1" data-url="">
             <span class="tab-title">Home</span>
             <button class="close-tab-btn">
               <span class="material-symbols-outlined">close</span>
@@ -89,7 +85,7 @@
         <input
           type="text"
           class="address-bar"
-          value="https://moviesmod.money/"
+          value=""
           placeholder="Search Google or type a URL"
         />
       </div>
@@ -112,7 +108,7 @@
           tabindex="1"
           class="tab-content-frame active"
           id="frame-1"
-          src="chatbot.html"
+          src=""
         ></webview>
       </div>
     </main>
@@ -126,6 +122,59 @@
         <ul id="download-list"></ul>
       </div>
     </div>
+    <button
+      class="chat-widget-toggle"
+      id="widget-toggle"
+      title="Open Automation Console"
+    >
+      <span class="material-symbols-outlined">analytics</span>
+    </button>
+
+    <div class="chat-container" id="chat-window">
+      <div class="chat-header">
+        <div class="bot-profile">
+          <div class="avatar">
+            <span class="material-symbols-outlined">memory</span>
+          </div>
+          <div class="bot-info">
+            <div class="bot-name">Orchestrator Core</div>
+            <div class="bot-status" id="bot-status">None selected</div>
+          </div>
+        </div>
+        <button class="close-chat-btn" id="close-chat" title="Hide Console">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <div class="chat-messages" id="chat-messages">
+        <div class="message-row bot">
+          <div>
+            <div class="bubble">
+              Welcome to the Automation Core. Type the name or keyword of a bot.
+            </div>
+            <span class="timestamp">Just now</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="chat-footer">
+        <form id="chat-form">
+          <div class="input-wrapper">
+            <input
+              type="text"
+              id="user-input"
+              class="chat-input"
+              placeholder="Type bot name (e.g., initialization, validation)..."
+              autocomplete="off"
+            />
+            <button type="submit" class="send-btn" title="Send request">
+              <span class="material-symbols-outlined">arrow_forward</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
     <script src="downloads.cjs"></script>
+    <script src="chatbot.js"></script>
   </body>
 </html>

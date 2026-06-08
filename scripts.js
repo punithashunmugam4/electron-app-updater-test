@@ -1,4 +1,6 @@
-export const interactWithWebview = async (script) => {
+const importedScript = await electron.importWorkflowJSON("test_tree.json");
+
+export const interactWithWebview = async (script = importedScript) => {
   // Helper to wait for a webview to finish loading its DOM
   const domReady = (wv) =>
     new Promise((resolve) => {
@@ -67,38 +69,5 @@ export const interactWithWebview = async (script) => {
   // Start with the initial node
   await runScriptNode(1000);
 };
-
-const testScript = {
-  1000: {
-    name: "Start",
-    metadata: `console.log("Starting with Node 1000"); sleep(1000);
-      openNewTab("https://yts.bz/");
-      if (true) { 
-       globalVars.set("next", "true");
-      } else { 
-        globalVars.set("next", "false");
-      } `,
-    conditionalRoutes: { true: 1001, false: 1002 },
-  },
-  1001: {
-    name: " ",
-    metadata: `console.log("True and running script Node 1001");`,
-    conditionalRoutes: {},
-  },
-  1002: {
-    name: "False Branch",
-    metadata: `console.log("False and running script Node 1002");`,
-    conditionalRoutes: { next: 1001 },
-  },
-};
-
-const importedScript = await electron.importWorkflowJSON(
-  "moviesmod_script_test.json",
-);
-
-if (!importedScript || importedScript.error) {
-  if (importedScript?.error) alert(importedScript.error);
-}
-console.log("Imported workflow JSON:", importedScript);
 
 export const executionScript = importedScript; // testScript, moviesmod_script

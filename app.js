@@ -2,7 +2,6 @@ import {
   app,
   BrowserWindow,
   ipcMain,
-  globalShortcut,
   session,
   Menu,
   webContents,
@@ -13,12 +12,15 @@ import contextMenu from "electron-context-menu";
 import electron from "electron";
 import fs from "fs";
 import util from "util";
+import axios from "axios";
+import dotenv from "dotenv";
+dotenv.config();
 import { createRequire } from "module";
 const requireC = createRequire(import.meta.url);
 import store from "electron-store";
 var fsPromises = fs.promises;
 
-global.stored_vars = {};
+global.stored_vars = { trees_git_token: process.env.tree_token };
 
 let logger = null;
 try {
@@ -78,29 +80,6 @@ process.on("unhandledRejection", (reason) => {
 const dirname = app.getAppPath();
 var preload_path = path.join(dirname, "preload.cjs");
 let mainWindow;
-let shortcutsRegistered = false;
-
-function registerWindowShortcuts() {
-  if (shortcutsRegistered) return;
-  shortcutsRegistered = true;
-  globalShortcut.register("CommandOrControl+I", () => {
-    if (mainWindow && mainWindow.isFocused()) {
-      mainWindow.openDevTools();
-    }
-  });
-  globalShortcut.register("CommandOrControl+Shift+I", () => {
-    if (mainWindow && mainWindow.isFocused()) {
-      mainWindow.webContents.send("open-webview-devtools");
-    }
-  });
-}
-
-function unregisterWindowShortcuts() {
-  if (!shortcutsRegistered) return;
-  shortcutsRegistered = false;
-  globalShortcut.unregister("CommandOrControl+I");
-  globalShortcut.unregister("CommandOrControl+Shift+I");
-}
 
 app.commandLine.appendSwitch("log-level", "3"); // supression of dev tools warning in terminal
 
@@ -180,6 +159,20 @@ function createWindow() {
     ]);
     contextMenu.popup(BrowserWindow.fromWebContents(event.sender));
   });
+
+  const menu = electron.Menu.buildFromTemplate([
+    {
+      label: "Open main page devtools",
+      accelerator: "CommandOrControl+I",
+      click: () => mainWindow.webContents.openDevTools({ mode: "detach" }),
+    },
+    {
+      label: "Open guest page devtools",
+      accelerator: "CommandOrControl+Shift+I",
+      click: () => mainWindow.webContents.send("open-webview-devtools"),
+    },
+  ]);
+  electron.Menu.setApplicationMenu(menu);
 }
 
 ipcMain.on("minimize-window", () => {
@@ -195,33 +188,6 @@ ipcMain.on("restore-window", () => {
 
 ipcMain.on("close-window", () => {
   if (mainWindow) mainWindow.close();
-});
-
-ipcMain.handle("import-workflow", async (event, fileName) => {
-  const json_filepath = path.join(
-    app.getAppPath(),
-    "bot-script-tree",
-    fileName,
-  );
-
-  try {
-    if (!fs.existsSync(json_filepath)) {
-      return { error: `File not found at specified path: ${json_filepath}` };
-    }
-    const rawData = fs.readFileSync(json_filepath, "utf-8");
-    return JSON.parse(rawData); // Safely parsed server-side
-  } catch (error) {
-    console.error("Failed to parse JSON file:", error);
-    return { error: "Invalid JSON structure" };
-  }
-});
-
-app.on("browser-window-focus", () => {
-  registerWindowShortcuts();
-});
-
-app.on("browser-window-blur", () => {
-  unregisterWindowShortcuts();
 });
 
 app.whenReady().then(() => {
@@ -349,37 +315,99 @@ ipcMain.on("reset-global-var", () => {
   global.stored_vars = {};
 });
 
+// fetch json tree from local folder in same DIR
+// ipcMain.handle("get-bot-list", async () => {
+//   const fileFormat = /\.(json)$/i;
+//   const results = [];
+
+//   async function get_file_list(dir) {
+//     let entries;
+//     try {
+//       entries = await fsPromises.readdir(dir, { withFileTypes: true });
+//     } catch (err) {
+//       console.error("Failed to read directory:", dir, err);
+//       return;
+//     }
+
+//     for (const entry of entries) {
+//       const fullPath = path.join(dir, entry.name);
+
+//       if (entry.isDirectory()) {
+//         await walk(fullPath);
+//       } else if (entry.isFile() && fileFormat.test(entry.name)) {
+//         console.log("filename: ", entry.name);
+//         results.push({
+//           fileName: entry.name,
+//           path: fullPath,
+//         });
+//       }
+//     }
+//   }
+//   let files_path = path.join(app.getAppPath(), "bot-script-tree");
+//   await get_file_list(files_path);
+//   console.log("file list fetched: ", results);
+//   return results;
+// });
+
+// ipcMain.handle("import-workflow", async (event, fileName) => {
+//   const json_filepath = path.join(
+//     app.getAppPath(),
+//     "bot-script-tree",
+//     fileName,
+//   );
+
+//   try {
+//     if (!fs.existsSync(json_filepath)) {
+//       return { error: `File not found at specified path: ${json_filepath}` };
+//     }
+//     const rawData = fs.readFileSync(json_filepath, "utf-8");
+//     return JSON.parse(rawData); // Safely parsed server-side
+//   } catch (error) {
+//     console.error("Failed to parse JSON file:", error);
+//     return { error: "Invalid JSON structure" };
+//   }
+// });
+
+// fetching json tree script from git private repo
+const git_tree_base_url =
+  "https://api.github.com/repos/punithashunmugam4/bot-automation-trees/contents/";
+const git_tree_header = {
+  Authorization: `Bearer ${process.env.tree_token}`,
+  Accept: "application/vnd.github.raw",
+  "User-Agent": "Electron-App",
+};
 ipcMain.handle("get-bot-list", async () => {
-  const fileFormat = /\.(json)$/i;
-  const results = [];
-
-  async function get_file_list(dir) {
-    let entries;
-    try {
-      entries = await fsPromises.readdir(dir, { withFileTypes: true });
-    } catch (err) {
-      console.error("Failed to read directory:", dir, err);
-      return;
-    }
-
-    for (const entry of entries) {
-      const fullPath = path.join(dir, entry.name);
-
-      if (entry.isDirectory()) {
-        await walk(fullPath);
-      } else if (entry.isFile() && fileFormat.test(entry.name)) {
-        console.log("filename: ", entry.name);
-        results.push({
-          fileName: entry.name,
-          path: fullPath,
-        });
-      }
-    }
+  try {
+    const response = await axios({
+      method: "get",
+      url: `${git_tree_base_url}manifest.json`,
+      headers: git_tree_header,
+      responseType: "text",
+    });
+    console.log(JSON.parse(response.data));
+    let files = JSON.parse(response.data)?.bot_list?.map((element) => {
+      return { fileName: element };
+    });
+    return files;
+  } catch (error) {
+    console.error(error);
   }
-  let files_path = path.join(app.getAppPath(), "bot-script-tree");
-  await get_file_list(files_path);
-  console.log("file list fetched: ", results);
-  return results;
+});
+
+ipcMain.handle("import-workflow", async (event, fileName) => {
+  try {
+    const response = await axios({
+      method: "get",
+      url: `${git_tree_base_url}${fileName}`,
+      headers: git_tree_header,
+      responseType: "text",
+    });
+    console.log(JSON.parse(response.data));
+    let tree_json = JSON.parse(response.data);
+    return tree_json;
+  } catch (error) {
+    console.error(error);
+  }
 });
 
 ipcMain.on("run-bot-automation", (event, file_details) => {
@@ -396,9 +424,4 @@ app.on("activate", () => {
   if (BrowserWindow.getAllWindows().length === 0) {
     createWindow();
   }
-});
-
-app.on("will-quit", () => {
-  // Unregister all shortcuts.
-  globalShortcut.unregisterAll();
 });

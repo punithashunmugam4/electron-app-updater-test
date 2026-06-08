@@ -1,5 +1,5 @@
 // Ailas renderer process communication setup
-import { executionScript, interactWithWebview } from "./scripts.js";
+import { interactWithWebview } from "./scripts.js";
 
 //Theme
 const toggleBtn = document.getElementById("theme-toggle");
@@ -53,17 +53,6 @@ const context_listener = (event) => {
   window.e.showContextMenu(params);
 };
 webview.addEventListener("context-menu", context_listener);
-
-let actions = "";
-try {
-  (async function () {
-    actions = await e.getWebviewActions();
-    eval(actions);
-    // console.log("Webview actions loaded in renderer", actions);
-  })();
-} catch (err) {
-  console.error("Error loading webviewActions.cjs via getWebviewActions:", err);
-}
 
 var url = document.querySelector(".address-bar").value;
 var activeWebview = webview;
@@ -145,8 +134,8 @@ const closeTab = (event) => {
   }
 };
 
-const addTab = (url = "https://moviesmod.money/", script = "") => {
-  url = url === "" ? "https://moviesmod.money/" : url;
+const addTab = (url = "https://moviesmod.army/", script = "") => {
+  url = url === "" ? "https://moviesmod.army/" : url;
 
   document.querySelectorAll(".tab").forEach((tab) => {
     tab.classList.remove("active");
@@ -191,12 +180,6 @@ const addTab = (url = "https://moviesmod.money/", script = "") => {
   newWebview.preload = "preload.cjs";
   let webview_wrapper = document.querySelector(".web-view-wrapper");
   webview_wrapper.appendChild(newWebview);
-  // document.body.appendChild(newWebview);
-
-  // Inject common functions into the new webview
-  newWebview.addEventListener("dom-ready", () => {
-    if (actions) newWebview.executeJavaScript(actions);
-  });
 
   // Add event listeners for the new webview
   newWebview.addEventListener("did-start-loading", () => {
@@ -211,20 +194,11 @@ const addTab = (url = "https://moviesmod.money/", script = "") => {
       document.querySelector(".address-bar").style.backgroundSize = "0% 100%";
     }, 500);
     url = document.querySelector(".address-bar").value;
-    newWebview.executeJavaScript(script);
-    newWebview.addEventListener("did-navigate-in-page", (event) => {
-      newWebview.executeJavaScript(e.continue_verification_script);
-    });
+
     newWebview.addEventListener("beforeunload", (event) => {
       event.preventDefault();
       event.returnValue = "";
     });
-    newWebview.executeJavaScript(`
-      window.addEventListener('beforeunload', (event) => {
-        event.preventDefault();
-        event.returnValue = '';
-      });
-    `);
   });
 
   newWebview.addEventListener("did-navigate", (event) => {
@@ -246,6 +220,7 @@ const addTab = (url = "https://moviesmod.money/", script = "") => {
       document.querySelector(".address-bar").value = url;
       newElement.setAttribute("data-url", url);
     });
+    script || newWebview.executeJavaScript(script);
   });
 
   newWebview.addEventListener("did-fail-load", (event) => {
@@ -277,9 +252,6 @@ document.querySelectorAll(".tab").forEach((tab) => {
 
 // Add event listeners for the initial webview
 const initialWebview = webview;
-initialWebview.addEventListener("dom-ready", () => {
-  initialWebview.executeJavaScript(actions);
-});
 
 initialWebview.addEventListener("did-start-loading", () => {
   console.log("Initial webview started loading");
@@ -340,7 +312,7 @@ document
   .addEventListener("click", async () => {
     url = document.querySelector(".address-bar").value;
     console.log("Interact with webview clicked", url);
-    await interactWithWebview(executionScript);
+    await interactWithWebview();
   });
 
 //running automation via chatbot
@@ -350,11 +322,8 @@ electron.receive("execute-bot-automation", async (file_details) => {
     file_details.fileName,
   );
 
-  if (!importedScript || importedScript.error) {
-    if (importedScript?.error) alert(importedScript.error);
-  }
   console.log("Imported workflow JSON:", importedScript);
-  await electron.sleep(5000);
+  await electron.sleep(3000);
   await interactWithWebview(importedScript);
 });
 // Function to reload the active webview
@@ -388,6 +357,6 @@ window.e.receive("inspect-webview-element", (params) => {
 });
 
 window.e.receive("create-new-tab", (data) => {
-  console.log("Creating new tab from webview action:", data.url, data.script);
+  console.log("Creating new tab from webview :", data.url, data.script);
   addTab(data.url, data.script || "");
 });
