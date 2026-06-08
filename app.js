@@ -13,20 +13,11 @@ import electron from "electron";
 import fs from "fs";
 import util from "util";
 import axios from "axios";
-// import dotenv from "dotenv";
-// dotenv.config();
-
-const tree_token =
-  "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";
-
-console.log("Your Env Variable is:", tree_token);
 import { createRequire } from "module";
 const requireC = createRequire(import.meta.url);
-
-import store from "electron-store";
 var fsPromises = fs.promises;
 
-global.stored_vars = { trees_git_token: tree_token };
+global.stored_vars = {};
 
 let logger = null;
 try {
@@ -378,7 +369,6 @@ ipcMain.on("reset-global-var", () => {
 const git_tree_base_url =
   "https://api.github.com/repos/punithashunmugam4/bot-automation-trees/contents/";
 const git_tree_header = {
-  Authorization: `Bearer ${tree_token}`,
   Accept: "application/vnd.github.raw",
   "User-Agent": "Electron-App",
 };
