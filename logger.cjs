@@ -50,6 +50,12 @@ const insertLog = db.prepare(
   "INSERT INTO logs (timestamp, level, message, metadata) VALUES (?, ?, ?, ?)",
 );
 
+const deletelog = db.prepare(`
+  DELETE FROM logs 
+  WHERE timestamp < datetime('now', '-30 days')
+`);
+deletelog.run();
+console.log("Deleted old log entries");
 function serializeMetadata(metadata) {
   if (metadata === undefined || metadata === null) {
     return "";
