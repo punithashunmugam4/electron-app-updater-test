@@ -7,10 +7,45 @@ export const interactWithWebview = async (script = importedScript) => {
       if (!wv.isLoading()) return resolve();
       wv.addEventListener("dom-ready", () => resolve(), { once: true });
     });
+  const chat_messages = document.getElementById("chat-messages");
+  function display_bot_loader() {
+    const bot_loader = `<div class="bot-loader">
+  <span></span>
+  <span></span>
+  <span></span>
+  </div>`;
+    const row = document.createElement("div");
+    row.className = `message-row bot`;
+    row.innerHTML = bot_loader;
+    chatMessages.appendChild(row);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  }
 
+  function remove_bot_loader() {
+    document.querySelector(".bot-loader").parentElement.remove();
+  }
+
+  function display_node_message(node_id, node_name) {
+    const timeString = new Date().toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+    const row = document.createElement("div");
+    row.className = `message-row bot`;
+    row.innerHTML = `
+                <div>
+                    <div class="bubble">${node_id}: ${node_name}</div>
+                    <span class="timestamp">${timeString}</span>
+                </div>
+            `;
+    chatMessages.appendChild(row);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  }
   async function runScriptNode(nodeId) {
     globalVars.set("next", null);
     const node = script[nodeId];
+    display_node_message(nodeId, node.name);
+    display_bot_loader();
     if (!node) {
       console.error(`Node with ID ${nodeId} not found in script.`);
       return;
@@ -37,6 +72,7 @@ export const interactWithWebview = async (script = importedScript) => {
       // 4. Run the script
       globalVars.set("currentNode", nodeId);
       await currentWebview.executeJavaScript(node.metadata);
+      remove_bot_loader();
       // 5. Determine the next node
       let nextNode = await globalVars.get("next");
       let nextNodeId = null;

@@ -711,3 +711,49 @@ webview.hidden {
     border: none;
   }
 }
+
+/* Container alignment */
+.bot-loader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px; /* Space between dots */
+  padding: 10px;
+}
+
+/* Base dot styling */
+.bot-loader span {
+  width: 8px;
+  height: 8px;
+  background-color: #007bff; /* Change to your bot's theme color */
+  border-radius: 50%;
+  display: inline-block;
+  /* Calls the 'bounce' keyframe, repeats infinitely */
+  animation: wave 1.2s infinite ease-in-out;
+}
+
+/* Staggering the animation for each dot */
+.bot-loader span:nth-child(1) {
+  animation-delay: 0s;
+}
+
+.bot-loader span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.bot-loader span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+/* The slide up and down animation */
+@keyframes wave {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.4; /* Slightly faded at rest */
+  }
+  50% {
+    transform: translateY(-8px); /* Slides up by 8px */
+    opacity: 1; /* Fully bright at the peak */
+  }
+}
