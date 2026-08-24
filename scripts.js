@@ -1,13 +1,34 @@
 const importedScript = await electron.importWorkflowJSON("test_tree.json");
 
 export const interactWithWebview = async (script = importedScript) => {
-  // Helper to wait for a webview to finish loading its DOM
+  // Helper to wait for a webview to finish loading its DOM.
+  // Electron throws if isLoading() is called before the webview is attached
+  // and the DOM-ready event has fired, so we guard the check and wait for
+  // the actual ready event instead of assuming the instance is ready.
   const domReady = (wv) =>
     new Promise((resolve) => {
-      if (!wv.isLoading()) return resolve();
-      wv.addEventListener("dom-ready", () => resolve(), { once: true });
+      if (!wv) return resolve();
+
+      const finish = () => {
+        wv.removeEventListener("dom-ready", finish);
+        wv.removeEventListener("did-finish-load", finish);
+        resolve();
+      };
+
+      try {
+        if (typeof wv.isLoading === "function" && !wv.isLoading()) {
+          finish();
+          return;
+        }
+      } catch (error) {
+        // Webview is not ready yet; wait for the actual DOM-ready event.
+      }
+
+      wv.addEventListener("dom-ready", finish, { once: true });
+      wv.addEventListener("did-finish-load", finish, { once: true });
     });
-  const chat_messages = document.getElementById("chat-messages");
+
+  const chatMessages = document.getElementById("chat-messages");
   function display_bot_loader() {
     const bot_loader = `<div class="bot-loader">
   <span></span>
@@ -50,7 +71,7 @@ export const interactWithWebview = async (script = importedScript) => {
       console.error(`Node with ID ${nodeId} not found in script.`);
       return;
     }
-
+ let nextNodeId = null;
     try {
       // 1. Always grab whichever webview is currently active AT THIS MOMENT
       const currentWebview = document.querySelector(
@@ -75,7 +96,7 @@ export const interactWithWebview = async (script = importedScript) => {
       remove_bot_loader();
       // 5. Determine the next node
       let nextNode = await globalVars.get("next");
-      let nextNodeId = null;
+     
       // 6. Process returned routing instructions and save state values
       if (nextNode && node.conditionalRoutes[`${nextNode}`] != null) {
         nextNodeId = Number(node.conditionalRoutes[`${nextNode}`]);
@@ -99,6 +120,9 @@ export const interactWithWebview = async (script = importedScript) => {
       }
     } catch (error) {
       console.error(`Error executing node ${nodeId}:`, error);
+      nextNodeId = null;
+      console.log("Script execution halted due to error at node", nodeId);
+        remove_bot_loader();
     }
   }
 

@@ -40,6 +40,11 @@ document.getElementById("close-btn").addEventListener("click", () => {
   window.e.closeWindow();
 });
 
+const resetBtn = document.getElementById("reset-app");
+resetBtn.addEventListener("click", () => {
+  window.electron.send("reset-app");
+});
+
 var webview = document.querySelector(".tab-content-frame.active");
 const context_listener = (event) => {
   webview = document.querySelector(".tab-content-frame.active");

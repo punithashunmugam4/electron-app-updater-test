@@ -12,7 +12,6 @@ import contextMenu from "electron-context-menu";
 import electron from "electron";
 import fs from "fs";
 import util from "util";
-import axios from "axios";
 import { createRequire } from "module";
 const requireC = createRequire(import.meta.url);
 var fsPromises = fs.promises;
@@ -92,19 +91,6 @@ if (!gotLock) {
     }
   });
 }
-
-ipcMain.handle("get-webview-actions", async () => {
-  try {
-    const { readFile } = await import("fs/promises");
-    const pathModule = (await import("path")).default;
-    const actionsPath = pathModule.join(app.getAppPath(), "webviewActions.cjs");
-    const content = await readFile(actionsPath, "utf8");
-    return content;
-  } catch (err) {
-    console.error("Failed to read webviewActions.cjs in main:", err);
-    return "";
-  }
-});
 
 function getExecutablePath() {
   // Always use the app installation directory for loading app.js
@@ -289,6 +275,12 @@ app.whenReady().then(() => {
   createWindow();
 });
 
+  ipcMain.on("reset-app", (event) => {
+    console.log("Received reset-app message");
+    app.relaunch({ args: process.argv.slice(1).concat(["--relaunch"]) });
+    app.exit(0);
+  });
+
 // Handle open-new-tab event
 ipcMain.on("open-new-tab", (event, data) => {
   console.log(
@@ -365,46 +357,9 @@ ipcMain.on("reset-global-var", () => {
 //   }
 // });
 
-// fetching json tree script from git private repo
-const git_tree_base_url =
-  "https://api.github.com/repos/punithashunmugam4/bot-automation-trees/contents/";
-const git_tree_header = {
-  Accept: "application/vnd.github.raw",
-  "User-Agent": "Electron-App",
-};
-ipcMain.handle("get-bot-list", async () => {
-  try {
-    const response = await axios({
-      method: "get",
-      url: `${git_tree_base_url}manifest.json`,
-      headers: git_tree_header,
-      responseType: "text",
-    });
-    console.log(JSON.parse(response.data));
-    let files = JSON.parse(response.data)?.bot_list?.map((element) => {
-      return { fileName: element };
-    });
-    return files;
-  } catch (error) {
-    console.error(error);
-  }
-});
-
-ipcMain.handle("import-workflow", async (event, fileName) => {
-  try {
-    const response = await axios({
-      method: "get",
-      url: `${git_tree_base_url}${fileName}`,
-      headers: git_tree_header,
-      responseType: "text",
-    });
-    console.log(JSON.parse(response.data));
-    let tree_json = JSON.parse(response.data);
-    return tree_json;
-  } catch (error) {
-    console.error(error);
-  }
-});
+// NOTE: API requests for fetching the bot manifest and workflow JSON
+// have been moved to the renderer (via `preload.cjs`) so that they
+// originate from the BrowserWindow and appear in the app's network logs.
 
 ipcMain.on("run-bot-automation", (event, file_details) => {
   console.log("Run-Bot-Automation", file_details);

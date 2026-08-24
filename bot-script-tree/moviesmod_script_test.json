@@ -4,7 +4,7 @@
     "conditionalRoutes": {
       "next": 1001
     },
-    "metadata": "console.log(\"Starting Node 1000\");\n actions.openNewTab(\"https://moviesmod.money/download-office-romance-2026-hindi-english-480p-720p-1080p/\");\n globalVars.set(\"next\", \"next\");\n console.log(\"End of Node 1000\");"
+    "metadata": "console.log(\"Starting Node 1000\");\n actions.openNewTab(\"https://moviesmod.zone/download-office-romance-2026-hindi-english-480p-720p-1080p/\");\n globalVars.set(\"next\", \"next\");\n console.log(\"End of Node 1000\");"
   },
   "1001": {
     "name": "Extract Link",
